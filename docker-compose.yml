@@ -9,6 +9,7 @@ services:
     environment:
       ENVIRONMENT: production
       MODEL_PATH: yolo11n.pt
+      MAX_UPLOAD_MB: 500
   dashboard:
     build: .
     command: streamlit run dashboard/app.py --server.address 0.0.0.0 --server.port 8501
