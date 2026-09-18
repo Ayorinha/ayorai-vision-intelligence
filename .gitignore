@@ -15,3 +15,4 @@ data/review/*
 *.avi
 *.onnx
 *.pt
+data/*.db
