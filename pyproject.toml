@@ -1,13 +1,18 @@
 [project]
 name = "ayorai-vision-intelligence"
-version = "0.1.0"
-description = "Agentic computer vision platform with tracking, HITL, MCP, RAG and RPA."
+version = "1.0.0"
+description = "Production-oriented agentic computer vision platform with tracking, HITL, MCP, RAG and RPA."
 requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.115,<1",
   "uvicorn[standard]>=0.30,<1",
   "pydantic>=2.8,<3",
-  "pydantic-settings>=2.4,<3"
+  "pydantic-settings>=2.4,<3",
+  "python-multipart>=0.0.9,<1",
+  "opencv-python-headless>=4.10,<5",
+  "ultralytics>=8.3,<9",
+  "streamlit>=1.38,<2",
+  "requests>=2.32,<3"
 ]
 
 [project.optional-dependencies]
