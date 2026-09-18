@@ -1,31 +1,55 @@
-# Architecture Decision Record
+# AYORAI Vision Intelligence — Architecture
 
-## Core principle
+## Design principle
 
-Separate reasoning from perception.
+**Separate perception, deterministic decisions and reasoning.**
 
-### Perception
-Computer Vision models detect objects and produce detections/tracks.
+### 1. Perception
 
-### Decision layer
-Confidence policies determine whether a detection is automatically accepted, sent to Human-in-the-Loop review, or rejected.
+Computer Vision models produce object detections and tracking information.
 
-### Agent layer
-An Astra-class reasoning model orchestrates tools and retrieves domain context. The model does not replace deterministic CV components.
+### 2. Decision
 
-### MCP
-MCP exposes safe, explicit operations such as track history, low-confidence events and dataset export.
+The confidence engine determines whether an event is automatically accepted, routed to Human-in-the-Loop review, or rejected.
 
-### RAG
-RAG grounds operational explanations in versioned documentation.
+### 3. Tool layer
 
-### RPA
-RPA monitors inputs and triggers processing/reporting workflows.
+MCP exposes explicit, auditable operations such as track history, low-confidence events and annotation export.
+
+### 4. Knowledge layer
+
+RAG provides versioned domain context to the reasoning layer.
+
+### 5. Agent layer
+
+The AI orchestrator selects tools and combines retrieved context with structured vision events.
+
+### 6. Automation
+
+RPA watches input locations and initiates processing/reporting workflows.
 
 ## Data flow
 
-Video -> Detection -> Tracking -> Confidence -> Review -> Events -> RAG/MCP -> Agent -> Report.
+```
+Video
+  ↓
+Detection
+  ↓
+Tracking
+  ↓
+Confidence
+  ↓
+Human Review
+  ↓
+Structured Events
+  ↓
+MCP + RAG
+  ↓
+Agent
+  ↓
+Dashboard / Report / Dataset
+```
 
-## Privacy
+## Privacy and security
 
-For regulated environments, keep raw video and personal data outside the public repository. Prefer local processing and explicit retention policies.
+For regulated environments, raw video and personal data must remain outside the public Git repository. Prefer local/private processing where required, enforce retention policies, authenticate operators and maintain an audit trail.
