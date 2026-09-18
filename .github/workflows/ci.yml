@@ -1,10 +1,8 @@
-name: AYORAI CI
+name: CI
 
 on:
   push:
-    branches: [main]
   pull_request:
-    branches: [main]
 
 permissions:
   contents: read
@@ -22,6 +20,6 @@ jobs:
       - name: Lint
         run: ruff check .
       - name: Tests
-        run: pytest
+        run: pytest -q
       - name: API import smoke test
         run: python -c "from src.api.main import app; print(app.title)"
