@@ -83,10 +83,12 @@ EVENT STORE + DATABASE
 - GET /health
 - GET /ready
 - GET /tools
+- GET /metrics
 - POST /jobs
 - GET /jobs/{job_id}
 - GET /jobs/{job_id}/detections
 - GET /jobs/{job_id}/events
+- GET /jobs/{job_id}/export.csv
 - GET /reviews
 - POST /reviews/{review_id}
 - POST /knowledge
