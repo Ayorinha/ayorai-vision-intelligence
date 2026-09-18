@@ -1,6 +1,6 @@
-# Development workflow
+# Development — AYORAI Vision Intelligence
 
-## 1. Install
+## Environment
 
 ```bash
 python -m venv .venv
@@ -8,26 +8,34 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
-## 2. Run
+## API
 
-```uvicorn src.api.main:app --reload```
+```bash
+uvicorn src.api.main:app --reload
+```
 
-## 3. Test
+## Dashboard
+
+```bash
+streamlit run dashboard/app.py
+```
+
+## Tests
 
 ```pytest```
 
-## 4. Quality
+## Lint
 
 ```ruff check .```
 
-## Next implementation milestones
+## Engineering sequence
 
-1. Plug in a production detector.
-2. Plug in a multi-object tracker.
-3. Persist tracks in PostgreSQL/Parquet.
-4. Implement MCP transport.
-5. Add local embeddings/vector store.
-6. Connect an approved reasoning model.
-7. Build the review dashboard.
-8. Add Docker and CI/CD deployment.
-9. Benchmark annotation throughput and review rate.
+1. Validate deterministic contracts.
+2. Run unit tests.
+3. Test video processing on a public/synthetic sample.
+4. Validate model thresholds against a representative dataset.
+5. Review uncertain events.
+6. Benchmark throughput and review rate.
+7. Containerize.
+8. Run CI.
+9. Deploy only after environment-specific security controls are configured.
