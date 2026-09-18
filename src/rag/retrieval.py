@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from ..core.repository import search_knowledge
 
 @dataclass
 class RetrievedContext:
@@ -7,7 +8,6 @@ class RetrievedContext:
     score: float
 
 class Retriever:
-    """Provider-neutral RAG contract. Plug in a local vector store in production."""
-
+    """Local-first deterministic retrieval. The interface is ready for local embeddings/vector search."""
     def search(self, query: str, top_k: int = 5) -> list[RetrievedContext]:
-        return []
+        return [RetrievedContext(**item) for item in search_knowledge(query, top_k)]
