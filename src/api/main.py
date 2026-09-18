@@ -1,8 +1,10 @@
 from pathlib import Path
 from datetime import datetime, timezone
+import csv
+import io
 from fastapi import BackgroundTasks, FastAPI, File, UploadFile, HTTPException
-from fastapi.responses import FileResponse
-from src.core.database import init_db
+from fastapi.responses import FileResponse, StreamingResponse
+from src.core.database import init_db, connect
 from src.core.settings import settings
 from src.core.repository import create_job,get_job,update_job,list_detections,list_reviews,decide_review,list_events,add_event,upsert_knowledge
 from src.mcp.registry import ToolRegistry
@@ -14,7 +16,7 @@ from src.vision.tracker import TrackStore
 from src.vision.confidence import classify_confidence
 from src.vision.pipeline import VisionPipeline
 
-app=FastAPI(title=settings.app_name,version="2.0.0")
+app=FastAPI(title=settings.app_name,version="2.1.0")
 store=TrackStore(); tools:ToolRegistry=build_registry(store)
 retriever=Retriever(); agent=VisionOrchestrator(tools,retriever)
 init_db()
@@ -30,10 +32,19 @@ def run_job(job_id,input_path,output_path):
         add_event(job_id,"job_failed",{"error":str(exc)})
 
 @app.get("/health")
-def health(): return {"status":"ok","environment":settings.environment,"version":"2.0.0"}
+def health(): return {"status":"ok","environment":settings.environment,"version":"2.1.0"}
 
 @app.get("/ready")
 def ready(): return {"ready":True,"model":settings.model_path,"database":"sqlite"}
+
+@app.get("/metrics")
+def metrics():
+    with connect() as db:
+        jobs=db.execute("SELECT COUNT(*) FROM jobs").fetchone()[0]
+        detections=db.execute("SELECT COUNT(*) FROM detections").fetchone()[0]
+        pending_reviews=db.execute("SELECT COUNT(*) FROM reviews WHERE status='PENDING'").fetchone()[0]
+        events=db.execute("SELECT COUNT(*) FROM events").fetchone()[0]
+    return {"jobs":jobs,"detections":detections,"pending_reviews":pending_reviews,"events":events}
 
 @app.get("/tools")
 def list_tools(): return {"tools":tools.names()}
@@ -71,12 +82,23 @@ def job_detections(job_id): return list_detections(job_id)
 @app.get("/jobs/{job_id}/events")
 def job_events(job_id): return list_events(job_id)
 
+@app.get("/jobs/{job_id}/export.csv")
+def export_csv(job_id):
+    if not get_job(job_id): raise HTTPException(404,"Job not found")
+    rows=list_detections(job_id)
+    output=io.StringIO()
+    fields=["id","frame","track_id","label","confidence","x1","y1","x2","y2","created_at"]
+    writer=csv.DictWriter(output,fieldnames=fields); writer.writeheader()
+    for row in rows: writer.writerow({k:row.get(k) for k in fields})
+    return StreamingResponse(iter([output.getvalue()]),media_type="text/csv",
+                             headers={"Content-Disposition":f"attachment; filename={job_id}.csv"})
+
 @app.get("/reviews")
 def reviews(status="PENDING"): return list_reviews(status)
 
 @app.post("/reviews/{review_id}")
 def review(review_id:int,decision:ReviewDecision):
-    try: return decide_review(review_id,decision.decision,decision.reviewer,None)
+    try: return decide_review(review_id,decision.decision,decision.reviewer,decision.final_label)
     except (KeyError,ValueError) as exc: raise HTTPException(400,str(exc))
 
 @app.post("/knowledge")
