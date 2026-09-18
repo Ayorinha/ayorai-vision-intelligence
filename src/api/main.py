@@ -1,59 +1,97 @@
 from pathlib import Path
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from datetime import datetime, timezone
+from fastapi import BackgroundTasks, FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import FileResponse
 from src.core.database import init_db
 from src.core.settings import settings
+from src.core.repository import create_job,get_job,update_job,list_detections,list_reviews,decide_review,list_events,add_event,upsert_knowledge
 from src.mcp.registry import ToolRegistry
 from src.mcp.tools import build_registry
-from src.vision.models import Detection
+from src.rag.retrieval import Retriever
+from src.agents.orchestrator import VisionOrchestrator
+from src.vision.models import Detection,ReviewDecision
 from src.vision.tracker import TrackStore
 from src.vision.confidence import classify_confidence
 from src.vision.pipeline import VisionPipeline
 
-app = FastAPI(title=settings.app_name, version="1.0.0")
-store = TrackStore()
-tools: ToolRegistry = build_registry(store)
+app=FastAPI(title=settings.app_name,version="2.0.0")
+store=TrackStore(); tools:ToolRegistry=build_registry(store)
+retriever=Retriever(); agent=VisionOrchestrator(tools,retriever)
 init_db()
 
+def run_job(job_id,input_path,output_path):
+    update_job(job_id,"PROCESSING",started_at=datetime.now(timezone.utc).isoformat(),progress=0)
+    try:
+        summaries=VisionPipeline(settings.model_path,job_id=job_id).process(str(input_path),str(output_path))
+        update_job(job_id,"COMPLETED",output_path=str(output_path),progress=1,completed_at=datetime.now(timezone.utc).isoformat())
+        add_event(job_id,"job_completed",{"tracks":len(summaries)})
+    except Exception as exc:
+        update_job(job_id,"FAILED",error=str(exc),completed_at=datetime.now(timezone.utc).isoformat())
+        add_event(job_id,"job_failed",{"error":str(exc)})
+
 @app.get("/health")
-def health():
-    return {"status": "ok", "environment": settings.environment, "version": "1.0.0"}
+def health(): return {"status":"ok","environment":settings.environment,"version":"2.0.0"}
 
 @app.get("/ready")
-def ready():
-    return {"ready": True, "model": settings.model_path}
+def ready(): return {"ready":True,"model":settings.model_path,"database":"sqlite"}
 
 @app.get("/tools")
-def list_tools():
-    return {"tools": tools.names()}
+def list_tools(): return {"tools":tools.names()}
 
 @app.post("/detections")
-def add_detection(detection: Detection):
-    store.add(detection)
-    return {"accepted": True, "action": classify_confidence(detection.confidence)}
+def add_detection(detection:Detection):
+    store.add(detection); return {"accepted":True,"action":classify_confidence(detection.confidence)}
 
 @app.get("/tracks")
-def tracks():
-    return [item.model_dump() for item in store.summary()]
+def tracks(): return [item.model_dump() for item in store.summary()]
 
-@app.post("/process-video")
-async def process_video(file: UploadFile = File(...)):
-    if not file.filename:
-        raise HTTPException(400, "Missing filename")
-    suffix = Path(file.filename).suffix.lower()
-    if suffix not in {".mp4", ".mov", ".avi", ".mkv"}:
-        raise HTTPException(415, "Unsupported video format")
-    input_path = Path("data/input") / Path(file.filename).name
-    output_path = Path("data/output") / f"{input_path.stem}_tracked.mp4"
-    input_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    input_path.write_bytes(await file.read())
-    summaries = VisionPipeline(settings.model_path).process(str(input_path), str(output_path))
-    return {"status": "completed", "output": str(output_path), "tracks": [s.model_dump() for s in summaries]}
+@app.post("/jobs",status_code=202)
+async def create_video_job(background_tasks:BackgroundTasks,file:UploadFile=File(...)):
+    if not file.filename: raise HTTPException(400,"Missing filename")
+    suffix=Path(file.filename).suffix.lower()
+    if suffix not in {".mp4",".mov",".avi",".mkv"}: raise HTTPException(415,"Unsupported video format")
+    data=await file.read()
+    if len(data)>settings.max_upload_mb*1024*1024: raise HTTPException(413,"Upload exceeds configured limit")
+    safe_name=Path(file.filename).name; input_path=Path("data/input")/safe_name
+    output_path=Path("data/output")/(input_path.stem+"_tracked.mp4")
+    input_path.parent.mkdir(parents=True,exist_ok=True); output_path.parent.mkdir(parents=True,exist_ok=True)
+    input_path.write_bytes(data); job_id=create_job(safe_name)
+    background_tasks.add_task(run_job,job_id,input_path,output_path)
+    return {"job_id":job_id,"status":"QUEUED"}
+
+@app.get("/jobs/{job_id}")
+def job(job_id):
+    result=get_job(job_id)
+    if not result: raise HTTPException(404,"Job not found")
+    return result
+
+@app.get("/jobs/{job_id}/detections")
+def job_detections(job_id): return list_detections(job_id)
+
+@app.get("/jobs/{job_id}/events")
+def job_events(job_id): return list_events(job_id)
+
+@app.get("/reviews")
+def reviews(status="PENDING"): return list_reviews(status)
+
+@app.post("/reviews/{review_id}")
+def review(review_id:int,decision:ReviewDecision):
+    try: return decide_review(review_id,decision.decision,decision.reviewer,None)
+    except (KeyError,ValueError) as exc: raise HTTPException(400,str(exc))
+
+@app.post("/knowledge")
+def add_knowledge(source:str,content:str): return {"id":upsert_knowledge(source,content)}
+
+@app.post("/agent/query")
+def agent_query(query:str): return agent.answer(query)
+
+@app.post("/mcp/call/{name}")
+def mcp_call(name:str,arguments:dict|None=None):
+    try: return {"result":tools.call(name,**(arguments or {}))}
+    except KeyError as exc: raise HTTPException(404,str(exc))
 
 @app.get("/output/{filename}")
-def output(filename: str):
-    path = Path("data/output") / Path(filename).name
-    if not path.exists():
-        raise HTTPException(404, "Output not found")
+def output(filename:str):
+    path=Path("data/output")/Path(filename).name
+    if not path.exists(): raise HTTPException(404,"Output not found")
     return FileResponse(path)
