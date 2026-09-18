@@ -1,15 +1,15 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,HTTPException
 from src.mcp.registry import ToolRegistry
 from src.mcp.tools import build_registry
-from src.vision.tracker import TrackStore
 
-mcp_app = FastAPI(title="AYORAI MCP Tool Gateway")
-registry: ToolRegistry = build_registry(TrackStore())
+mcp_app=FastAPI(title="AYORAI Tool Gateway")
+registry:ToolRegistry=build_registry()
 
 @mcp_app.get("/mcp/tools")
 def tools():
-    return {"tools": registry.names()}
+    return {"transport":"HTTP tool gateway","tools":registry.names()}
 
 @mcp_app.post("/mcp/call/{name}")
-def call(name: str, arguments: dict | None = None):
-    return {"result": registry.call(name, **(arguments or {}))}
+def call(name:str,arguments:dict|None=None):
+    try: return {"result":registry.call(name,**(arguments or {}))}
+    except KeyError as exc: raise HTTPException(404,str(exc))
