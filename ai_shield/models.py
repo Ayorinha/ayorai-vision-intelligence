@@ -3,11 +3,13 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
+
 class Decision(str, Enum):
     ALLOW = "allow"
     REVIEW = "review"
     BLOCK = "block"
     ISOLATE = "isolate"
+
 
 class Classification(str, Enum):
     PUBLIC = "public"
@@ -15,12 +17,23 @@ class Classification(str, Enum):
     CONFIDENTIAL = "confidential"
     RESTRICTED = "restricted"
 
+
 @dataclass(frozen=True)
 class Identity:
     subject: str
     role: str
     assurance: int
     active: bool = True
+
+
+@dataclass(frozen=True)
+class HumanApproval:
+    approval_id: str
+    approved_by: str
+    approved_at: str
+    request_digest: str
+    expires_at: str | None = None
+
 
 @dataclass(frozen=True)
 class AgentRequest:
@@ -34,13 +47,17 @@ class AgentRequest:
     destination: str | None = None
     external_network: bool = False
     human_approved: bool = False
+    approval: HumanApproval | None = None
+    idempotency_key: str | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
+
 
 @dataclass(frozen=True)
 class PolicyResult:
     decision: Decision
     reason: str
     controls: tuple[str, ...] = ()
+
 
 @dataclass
 class ProvenanceEvent:
@@ -52,4 +69,7 @@ class ProvenanceEvent:
     resource: str
     decision: Decision
     parent_event_id: str | None = None
+    timestamp: str | None = None
+    previous_hash: str | None = None
+    event_hash: str | None = None
     metadata: dict[str, Any] = field(default_factory=dict)

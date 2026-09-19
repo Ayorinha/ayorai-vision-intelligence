@@ -4,11 +4,13 @@ This module never executes network attacks or real transactions. A caller suppli
 from dataclasses import dataclass
 from .engine import ShieldEngine
 from .models import AgentRequest, Decision
+
 @dataclass(frozen=True)
 class EvaluationCase:
     name: str
     request: AgentRequest
     expected: Decision
+
 @dataclass(frozen=True)
 class EvaluationResult:
     name: str
@@ -16,9 +18,11 @@ class EvaluationResult:
     observed: Decision
     passed: bool
     reason: str
+
 def evaluate_cases(engine: ShieldEngine, cases: list[EvaluationCase]) -> list[EvaluationResult]:
-    results=[]
+    results = []
     for case in cases:
-        observed=engine.evaluate(case.request)
-        results.append(EvaluationResult(case.name,case.expected,observed,observed==case.expected,"decision recorded"))
+        outcome = engine.evaluate(case.request)
+        observed = outcome.decision
+        results.append(EvaluationResult(case.name, case.expected, observed, observed == case.expected, outcome.reason))
     return results
