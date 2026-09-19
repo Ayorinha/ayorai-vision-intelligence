@@ -40,5 +40,5 @@ The defensive evaluation should track:
 
 The benchmark remains synthetic and non-destructive. Passing these tests does not establish security against unknown or future frontier systems.
 
-## Threat-model alignment
+## Agent Identity & Trust Fabric\n\nThe Shield can be composed with a deterministic trust fabric that registers agents, grants explicit capabilities, constrains agent-to-agent delegation, limits delegation depth, scopes delegated resources, and supports immediate revocation. See `docs/AGENT_IDENTITY_TRUST.md`.\n\n## Threat-model alignment
 The design intentionally treats identity, tool authority, data access, transaction execution, egress, auditability, and containment as separate control-plane concerns. The model proposes; the Shield decides.

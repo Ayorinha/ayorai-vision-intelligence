@@ -82,7 +82,7 @@ See `docs/THREAT_MODEL.md` and `docs/EVALUATION.md`.
 | Lint + CI | ✅ |
 | Dependency audit + Bandit | ✅ |
 | Threat model | ✅ |
-| Evaluation plan | ✅ |
+| Evaluation plan | ✅ |\n| Agent identity & capability trust fabric | ✅ |\n| Scoped agent-to-agent delegation | ✅ |\n| Delegation revocation + depth controls | ✅ |
 
 ## MCP
 
@@ -203,4 +203,4 @@ The repository also contains a defensive financial-security reference implementa
 
 All attack scenarios are synthetic and non-destructive. The project does not connect to real financial infrastructure or implement real-world intrusion capabilities.
 
-See [docs/AI_SHIELD.md](docs/AI_SHIELD.md) and [ai_shield/README.md](ai_shield/README.md).
+See [docs/AI_SHIELD.md](docs/AI_SHIELD.md), [docs/AGENT_IDENTITY_TRUST.md](docs/AGENT_IDENTITY_TRUST.md), and [ai_shield/README.md](ai_shield/README.md).
