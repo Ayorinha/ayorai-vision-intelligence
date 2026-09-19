@@ -56,14 +56,10 @@ class ShieldEngine:
             result = PolicyResult(
                 Decision.ISOLATE, "capability_revoked_by_isolation", ("sovereign_isolator",)
             )
-        elif self.trust_fabric is not None:
-            result = self.trust_fabric.authorize(request)
+        else:
+            result = self.trust_fabric.authorize(request) if self.trust_fabric is not None else authorize(request)
             if result.decision == Decision.ALLOW:
                 result = authorize(request)
-            if result.decision == Decision.ALLOW and transaction is not None:
-                result = govern(request, transaction)
-        else:
-            result = authorize(request)
             if result.decision == Decision.ALLOW and transaction is not None:
                 result = govern(request, transaction)
             if result.decision == Decision.ALLOW and request.external_network:
