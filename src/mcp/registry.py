@@ -14,7 +14,8 @@ class ToolRegistry:
         if name not in self._tools:
             raise KeyError(f"Unknown tool: {name}")
         authorize_tool(name, kwargs)
-        return self._tools[name](**kwargs)
+        execution_kwargs = {k: v for k, v in kwargs.items() if k != "human_approved"}
+        return self._tools[name](**execution_kwargs)
 
     def names(self) -> list[str]:
         return sorted(self._tools)
