@@ -1,4 +1,28 @@
 # IEPTB Agentic AI Platform
+### Secure, Evaluated Multi-Agent AI for Regulated Remessa Workflows
+
+> **Research & engineering project by Anderson Leon Ayora (AyorAI).**
+> A production-oriented reference architecture for applying Agentic AI, RAG, MCP-style tools, Document Intelligence and AI Safety to a regulated Central de Remessa de Arquivos (CRA) workflow.
+
+**This is not an official IEPTB production system.** It is an independent portfolio/research implementation using synthetic data only.
+
+## Engineering thesis
+Enterprise AI is not just an LLM call. In regulated workflows, the system must prove **evidence, authorization, evaluation, traceability and safe failure**.
+
+> **The model reasons. Deterministic policies authorize. Humans approve consequential actions. Every decision is traceable.**
+
+## What this demonstrates
+- Python/FastAPI production architecture
+- Agentic orchestration + RAG
+- MCP-style least-privilege tools
+- Prompt-injection and data-leakage defenses
+- LGPD-oriented controls
+- Human-in-the-loop governance
+- Automated evaluation and security gates
+- Auditability and observability
+- Enterprise integration patterns
+
+
 ## Secure RAG & Multi-Agent Research for Remessa de Arquivos
 
 > Research and engineering prototype inspired by operational workflows in a regulated document-processing environment. This repository uses synthetic/anonymized data and does **not** contain IEPTB confidential information, credentials, production records, or personal data.
