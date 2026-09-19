@@ -44,6 +44,10 @@ def test_provenance_tampering_is_detected():
     e = ShieldEngine(); e.evaluate(req()); e.provenance.events[0].resource = "tampered"
     assert not e.provenance.verify_integrity()
 
+def test_provenance_tail_truncation_is_detected():
+    e = ShieldEngine(); e.evaluate(req()); e.provenance.events.pop()
+    assert not e.provenance.verify_integrity()
+
 def test_replay_is_blocked_for_consequential_requests():
     e = ShieldEngine(); r = req(identity=Identity("u", "senior_analyst", 95), capability="read_restricted", classification=Classification.RESTRICTED, human_approved=True)
     r = AgentRequest(**{**r.__dict__, "approval": approved(r)})
