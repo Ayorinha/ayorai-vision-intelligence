@@ -7,6 +7,7 @@ on:
       - "tests/test_ai_shield.py"
       - "tests/test_adversarial_ai_shield.py"
       - "tests/test_agent_trust.py"
+      - "tests/test_trust_engine.py"
       - "tests/test_frontier_eval.py"
       - "tests/test_agent_trust.py"
       - ".github/workflows/ai-shield.yml"
