@@ -1,5 +1,3 @@
-from .orchestrator import VisionOrchestrator
-
 class EvidenceAgent:
     """Evidence-first agent boundary for a future local/private LLM adapter."""
     def __init__(self, orchestrator):
