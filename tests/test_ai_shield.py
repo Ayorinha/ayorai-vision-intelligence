@@ -10,7 +10,7 @@ def approved(request):
     return HumanApproval("approval-1", "reviewer", "2026-09-19T09:00:00+00:00", ShieldEngine.request_digest(request))
 
 def test_unknown_capability_is_blocked(): assert ShieldEngine().evaluate(req(capability="delete_everything")).decision == Decision.BLOCK
-def test_role_escalation_is_reviewed(): assert ShieldEngine().evaluate(req(capability="execute_transaction")).decision == Decision.REVIEW
+def test_role_escalation_is_blocked(): assert ShieldEngine().evaluate(req(capability="execute_transaction")).decision == Decision.BLOCK
 
 def test_restricted_read_requires_human():
     r = req(identity=Identity("u", "senior_analyst", 95), capability="read_restricted", classification=Classification.RESTRICTED)
