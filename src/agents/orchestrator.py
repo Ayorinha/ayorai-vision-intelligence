@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Any
 
+from .providers import OpenAICompatibleProvider
+
 @dataclass
 class AgentTask:
     objective: str
@@ -8,21 +10,35 @@ class AgentTask:
     context: dict[str, Any]
 
 class VisionOrchestrator:
-    """Evidence-first orchestration boundary for local/private LLM adapters."""
-    def __init__(self, tool_registry, retriever) -> None:
+    """Evidence-first orchestration with an optional private/OpenAI-compatible provider."""
+    def __init__(self, tool_registry, retriever, provider=None) -> None:
         self.tools = tool_registry
         self.retriever = retriever
+        self.provider = provider or OpenAICompatibleProvider()
 
     def plan(self, objective: str) -> AgentTask:
-        return AgentTask(objective=objective, tools=self.tools.names(),
-                         context={"rag": self.retriever.search(objective)})
+        return AgentTask(
+            objective=objective,
+            tools=self.tools.names(),
+            context={"rag": self.retriever.search(objective)},
+        )
 
     def answer(self, objective: str) -> dict:
         task = self.plan(objective)
-        return {
+        evidence = [c.__dict__ for c in task.context["rag"]]
+        result = {
             "objective": objective,
-            "evidence": [c.__dict__ for c in task.context["rag"]],
+            "evidence": evidence,
             "available_tools": task.tools,
             "mode": "deterministic-orchestration",
-            "note": "Attach a local/private LLM adapter for natural-language reasoning."
         }
+        if not self.provider.configured:
+            result["note"] = "No external LLM configured; reasoning remains deterministic and evidence-first."
+            return result
+        completion = self.provider.generate([
+            {"role": "system", "content": "Answer only from supplied evidence. Never authorize tools."},
+            {"role": "user", "content": f"Objective: {objective}\nEvidence: {evidence}"},
+        ])
+        result["mode"] = "llm-assisted-evidence-first"
+        result["model_response"] = completion
+        return result
