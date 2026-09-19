@@ -1,9 +1,9 @@
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from .database import connect
 
 def now_iso():
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 def create_job(filename):
     import uuid
@@ -16,7 +16,7 @@ def update_job(job_id,status,**fields):
     allowed={"output_path","error","started_at","completed_at","progress"}
     fields={k:v for k,v in fields.items() if k in allowed}
     columns=["status=?"]+[k+"=?" for k in fields]
-    with connect() as db: db.execute("UPDATE jobs SET "+",".join(columns)+" WHERE id=?", [status,*fields.values(),job_id])
+    with connect() as db: db.execute("UPDATE jobs SET "+",".join(columns)+" WHERE id=?", [status,*fields.values(),job_id])  # nosec B608
 
 def get_job(job_id):
     with connect() as db: row=db.execute("SELECT * FROM jobs WHERE id=?",(job_id,)).fetchone()

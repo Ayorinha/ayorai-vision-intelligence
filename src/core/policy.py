@@ -25,9 +25,9 @@ class PolicyDenied(PermissionError):
 def authorize_tool(name: str, arguments: dict[str, Any]) -> ToolPolicy:
     policy = POLICIES.get(name)
     if policy is None:
-        raise PolicyDenied("Tool '%s' is not registered in the policy matrix" % name)
+        raise PolicyDenied(f"Tool '{name}' is not registered in the policy matrix")
     if policy.requires_human_approval and arguments.get("human_approved") is not True:
-        raise PolicyDenied("Tool '%s' requires explicit human approval" % name)
+        raise PolicyDenied(f"Tool '{name}' requires explicit human approval")
     if policy.requires_human_approval and not arguments.get("reviewer"):
-        raise PolicyDenied("Tool '%s' requires a reviewer identity" % name)
+        raise PolicyDenied(f"Tool '{name}' requires a reviewer identity")
     return policy

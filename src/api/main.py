@@ -1,5 +1,5 @@
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 import csv
 import io
 from fastapi import BackgroundTasks, FastAPI, File, UploadFile, HTTPException
@@ -23,13 +23,13 @@ retriever=Retriever(); agent=VisionOrchestrator(tools,retriever)
 init_db()
 
 def run_job(job_id,input_path,output_path):
-    update_job(job_id,"PROCESSING",started_at=datetime.now(timezone.utc).isoformat(),progress=0)
+    update_job(job_id,"PROCESSING",started_at=datetime.now(UTC).isoformat(),progress=0)
     try:
         summaries=VisionPipeline(settings.model_path,job_id=job_id).process(str(input_path),str(output_path))
-        update_job(job_id,"COMPLETED",output_path=str(output_path),progress=1,completed_at=datetime.now(timezone.utc).isoformat())
+        update_job(job_id,"COMPLETED",output_path=str(output_path),progress=1,completed_at=datetime.now(UTC).isoformat())
         add_event(job_id,"job_completed",{"tracks":len(summaries)})
     except Exception as exc:
-        update_job(job_id,"FAILED",error=str(exc),completed_at=datetime.now(timezone.utc).isoformat())
+        update_job(job_id,"FAILED",error=str(exc),completed_at=datetime.now(UTC).isoformat())
         add_event(job_id,"job_failed",{"error":str(exc)})
 
 @app.get("/health")
@@ -58,7 +58,7 @@ def add_detection(detection:Detection):
 def tracks(): return [item.model_dump() for item in store.summary()]
 
 @app.post("/jobs",status_code=202)
-async def create_video_job(background_tasks:BackgroundTasks,file:UploadFile=File(...)):
+async def create_video_job(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
     if not file.filename: raise HTTPException(400,"Missing filename")
     suffix=Path(file.filename).suffix.lower()
     if suffix not in {".mp4",".mov",".avi",".mkv"}: raise HTTPException(415,"Unsupported video format")
