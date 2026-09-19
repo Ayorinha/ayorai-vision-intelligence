@@ -1,5 +1,4 @@
 from .registry import ToolRegistry
-from ..vision.tracker import TrackStore
 from ..core.repository import list_detections,list_reviews,decide_review,list_events,search_knowledge
 
 def build_registry(store=None):
