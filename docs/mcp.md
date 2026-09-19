@@ -14,7 +14,7 @@ Exposed read-only tools:
 
 ## Safety boundary
 
-The MCP surface intentionally does not expose `approve_review` or `reject_review`. Those are consequential operations and remain behind the application policy boundary, where explicit human approval and reviewer identity are required.
+The MCP surface intentionally does not expose `approve_review` or `reject_review`. Those are consequential operations and remain behind the dedicated review workflow. The generic `/mcp/call/{name}` HTTP gateway rejects them; the standards-based MCP server does not expose them.
 
 ## Legacy HTTP gateway
 
