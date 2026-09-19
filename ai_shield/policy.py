@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from .models import AgentRequest, Classification, Decision, PolicyResult
 
@@ -27,7 +27,7 @@ def _approval_valid(request: AgentRequest) -> bool:
     if approval.expires_at is None:
         return True
     try:
-        return datetime.now(timezone.utc) < datetime.fromisoformat(approval.expires_at)
+        return datetime.now(UTC) < datetime.fromisoformat(approval.expires_at)
     except ValueError:
         return False
 
