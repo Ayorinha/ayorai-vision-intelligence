@@ -1,0 +1,30 @@
+name: AI Shield Security
+
+on:
+  push:
+    paths:
+      - "ai_shield/**"
+      - "tests/test_ai_shield.py"
+      - "tests/test_adversarial_ai_shield.py"
+      - ".github/workflows/ai-shield.yml"
+  pull_request:
+    paths:
+      - "ai_shield/**"
+      - "tests/test_ai_shield.py"
+      - "tests/test_adversarial_ai_shield.py"
+      - ".github/workflows/ai-shield.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  adversarial-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install --upgrade pip
+      - run: pip install pytest==9.0.3
+      - run: PYTHONPATH=. pytest -q tests/test_ai_shield.py tests/test_adversarial_ai_shield.py

@@ -192,3 +192,15 @@ MIT
 AI Engineer | Applied AI · Document Intelligence · Generative AI · Intelligent Automation
 
 Part of the **AYORAI TECH** engineering portfolio.
+
+## AYORAI AI Shield
+
+### Advanced Defense Against Autonomous AI
+
+The repository also contains a defensive financial-security reference implementation under [ai_shield](ai_shield/). It models a Zero-Trust boundary for autonomous agents: deterministic capability authorization, data classification, transaction risk governance, default-deny egress, emergency isolation, and attack provenance.
+
+> **Intelligence does not grant authority.**
+
+All attack scenarios are synthetic and non-destructive. The project does not connect to real financial infrastructure or implement real-world intrusion capabilities.
+
+See [docs/AI_SHIELD.md](docs/AI_SHIELD.md) and [ai_shield/README.md](ai_shield/README.md).
