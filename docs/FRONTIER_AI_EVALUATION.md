@@ -31,3 +31,8 @@ Frontier models are increasingly capable of computer use, cybersecurity reasonin
 ## Limitations
 
 Passing these tests does not establish security against an unknown AGI. It demonstrates that the tested authority boundaries are enforced for the modeled cases.
+
+
+## Evaluation Lab v2
+
+The repository now exposes `ai_shield.evaluation_lab` for deterministic case execution and aggregate pass-rate reporting across synthetic frontier-agent scenarios.
