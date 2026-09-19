@@ -149,7 +149,7 @@ pip-audit
 bandit -q -r src
 ```
 
-CI runs these quality/security checks on pushes and pull requests.
+CI runs these quality/security checks on pushes and pull requests. CodeQL analyzes Python on pushes, pull requests and a weekly schedule; dependency review checks pull requests for newly introduced vulnerable dependencies; Dependabot keeps Python dependencies current.
 
 ## Documentation
 
@@ -180,7 +180,7 @@ These are deployment and scale extensions, not claims of functionality that is n
 
 ## Portfolio positioning
 
-**Python · Computer Vision · Agentic AI · RAG · MCP · AI Safety · FastAPI · RPA · Docker · CI/CD · Human-in-the-Loop · Data Engineering**
+**Python · Computer Vision · Agentic AI · RAG · MCP · AI Safety · Security Engineering · FastAPI · RPA · Docker · CI/CD · Human-in-the-Loop · Data Engineering**
 
 ## License
 
