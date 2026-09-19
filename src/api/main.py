@@ -7,6 +7,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 from src.core.database import init_db, connect
 from src.core.settings import settings
 from src.core.repository import create_job,get_job,update_job,list_detections,list_reviews,decide_review,list_events,add_event,upsert_knowledge
+from src.core.policy import POLICIES
 from src.mcp.registry import ToolRegistry
 from src.mcp.tools import build_registry
 from src.rag.retrieval import Retriever
@@ -108,9 +109,16 @@ def add_knowledge(source:str,content:str): return {"id":upsert_knowledge(source,
 def agent_query(query:str): return agent.answer(query)
 
 @app.post("/mcp/call/{name}")
-def mcp_call(name:str,arguments:dict|None=None):
-    try: return {"result":tools.call(name,**(arguments or {}))}
-    except KeyError as exc: raise HTTPException(404,str(exc))
+def mcp_call(name: str, arguments: dict | None = None):
+    policy = POLICIES.get(name)
+    if policy is None:
+        raise HTTPException(404, "Tool not found")
+    if not policy.read_only or policy.requires_human_approval:
+        raise HTTPException(403, "Critical or state-changing tools must use the dedicated review workflow")
+    try:
+        return {"result": tools.call(name, **(arguments or {}))}
+    except KeyError as exc:
+        raise HTTPException(404, str(exc))
 
 @app.get("/output/{filename}")
 def output(filename:str):
