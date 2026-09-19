@@ -9,14 +9,16 @@ from .models import AgentRequest, Decision, PolicyResult
 from .policy import authorize
 from .provenance import ProvenanceGraph
 from .transaction import TransactionProfile, govern
+from .trust import AgentTrustFabric
 
 
 class ShieldEngine:
     """Deterministic decision pipeline. No LLM is used for authorization."""
 
-    def __init__(self):
+    def __init__(self, trust_fabric: AgentTrustFabric | None = None):
         self.isolator = SovereignIsolator()
         self.provenance = ProvenanceGraph()
+        self.trust_fabric = trust_fabric
         self._seen_requests: set[str] = set()
 
     @staticmethod
@@ -54,6 +56,12 @@ class ShieldEngine:
             result = PolicyResult(
                 Decision.ISOLATE, "capability_revoked_by_isolation", ("sovereign_isolator",)
             )
+        elif self.trust_fabric is not None:
+            result = self.trust_fabric.authorize(request)
+            if result.decision == Decision.ALLOW:
+                result = authorize(request)
+            if result.decision == Decision.ALLOW and transaction is not None:
+                result = govern(request, transaction)
         else:
             result = authorize(request)
             if result.decision == Decision.ALLOW and transaction is not None:
@@ -72,7 +80,10 @@ class ShieldEngine:
             action=request.capability,
             resource=request.resource,
             decision=result.decision,
-            metadata={"request_digest": self.request_digest(request)},
+            metadata={
+                "request_digest": self.request_digest(request),
+                "trust_fabric": self.trust_fabric is not None,
+            },
         )
         return result
 
