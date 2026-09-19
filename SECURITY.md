@@ -1,15 +1,17 @@
 # Security Policy
 
+## Scope
+
+This repository is a public engineering project. Do not submit real personal, financial, institutional or confidential documents as issues, examples or test fixtures.
+
 ## Reporting
 
-Do not publish credentials, tokens, private video, personal data or security-sensitive operational details in issues.
+For a suspected vulnerability, avoid publishing exploit details in a public issue. Contact the repository owner privately through the GitHub profile so the issue can be assessed before disclosure.
 
-For a vulnerability, use GitHub's private security reporting mechanisms when enabled for the repository.
+## Claims
 
-## Data protection
+Security and AI-safety claims are scoped to the documented version, configuration, test corpus and methodology. The project does not claim absolute security.
 
-This public portfolio project must use synthetic or public demonstration data. Regulated IEPTB data must remain in authorized private infrastructure.
+## Data
 
-## Secrets
-
-Use environment variables or a secret manager. Never commit `.env`, API keys, access tokens or model-provider credentials.
+Use synthetic, public or explicitly authorized data in demonstrations.
