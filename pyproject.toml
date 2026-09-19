@@ -1,6 +1,6 @@
 [project]
 name = "ayorai-vision-intelligence"
-version = "2.0.0"
+version = "2.1.0"
 description = "Agentic computer vision platform with tracking, uncertainty routing, human review, local-first RAG, tool orchestration and RPA."
 requires-python = ">=3.11"
 dependencies = [
