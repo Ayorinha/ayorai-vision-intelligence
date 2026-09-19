@@ -1,6 +1,8 @@
 from collections.abc import Callable
 from typing import Any
 
+from src.core.policy import authorize_tool
+
 class ToolRegistry:
     def __init__(self) -> None:
         self._tools: dict[str, Callable[..., Any]] = {}
@@ -11,6 +13,7 @@ class ToolRegistry:
     def call(self, name: str, **kwargs: Any) -> Any:
         if name not in self._tools:
             raise KeyError(f"Unknown tool: {name}")
+        authorize_tool(name, kwargs)
         return self._tools[name](**kwargs)
 
     def names(self) -> list[str]:
