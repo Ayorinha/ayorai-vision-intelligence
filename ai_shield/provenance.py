@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 import hashlib
 import json
 
-from .models import Decision, ProvenanceEvent
+from .models import ProvenanceEvent
+
 
 @dataclass
 class ProvenanceGraph:
@@ -29,7 +30,7 @@ class ProvenanceGraph:
 
     def record(self, *, event_id, request_id, actor, agent_id, action, resource, decision, parent_event_id=None, metadata=None):
         previous_hash = self.events[-1].event_hash if self.events else None
-        event = ProvenanceEvent(event_id=event_id, request_id=request_id, actor=actor, agent_id=agent_id, action=action, resource=resource, decision=decision, parent_event_id=parent_event_id, timestamp=datetime.now(timezone.utc).isoformat(), previous_hash=previous_hash, metadata=dict(metadata or {}))
+        event = ProvenanceEvent(event_id=event_id, request_id=request_id, actor=actor, agent_id=agent_id, action=action, resource=resource, decision=decision, parent_event_id=parent_event_id, timestamp=datetime.now(UTC).isoformat(), previous_hash=previous_hash, metadata=dict(metadata or {}))
         event.event_hash = self._digest(event)
         self.events.append(event)
         self._sealed_count = len(self.events)
