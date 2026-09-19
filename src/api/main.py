@@ -28,7 +28,7 @@ def run_job(job_id,input_path,output_path):
         update_job(job_id,"COMPLETED",output_path=str(output_path),progress=1,completed_at=datetime.now(UTC).isoformat())
         add_event(job_id,"job_completed",{"tracks":len(summaries)})
     except Exception as exc:
-        update_job(job_id,"FAILED",error=str(exc),completed_at=datetime.now(timezone.utc).isoformat())
+        update_job(job_id,"FAILED",error=str(exc),completed_at=datetime.now(UTC).isoformat())
         add_event(job_id,"job_failed",{"error":str(exc)})
 
 @app.get("/health")
