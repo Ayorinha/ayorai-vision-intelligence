@@ -90,7 +90,7 @@ Run locally:
 python -m src.mcp.server
 ```
 
-For deployment, the server uses Streamable HTTP. The official MCP SDK documents Streamable HTTP as the current HTTP transport. citeturn0search6
+For deployment, the server uses Streamable HTTP. The official MCP SDK documents Streamable HTTP as the current HTTP transport.
 
 ## API
 
