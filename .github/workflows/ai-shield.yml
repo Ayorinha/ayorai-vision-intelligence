@@ -6,7 +6,9 @@ on:
       - "ai_shield/**"
       - "tests/test_ai_shield.py"
       - "tests/test_adversarial_ai_shield.py"
+      - "tests/test_agent_trust.py"
       - "tests/test_frontier_eval.py"
+      - "tests/test_agent_trust.py"
       - ".github/workflows/ai-shield.yml"
   pull_request:
     paths:
