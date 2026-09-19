@@ -5,6 +5,9 @@ on:
     branches: ["main", "feat/**"]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   quality:
     runs-on: ubuntu-latest
@@ -20,9 +23,16 @@ jobs:
         run: python -m pip install -e ".[dev]"
       - name: Lint
         run: ruff check .
+      - name: Compile
+        run: python -m compileall -q src evaluation
       - name: Tests
         run: pytest -q
       - name: Security regression
-        run: pytest -q tests/test_security.py tests/test_api.py
+        run: pytest -q tests/test_security.py tests/test_governance.py tests/test_mcp.py
       - name: Evaluation
         run: PYTHONPATH=. python evaluation/run.py
+      - name: Upload evaluation report
+        uses: actions/upload-artifact@v4
+        with:
+          name: agentic-ai-evaluation-report
+          path: projects/ieptb-agentic-ai/evaluation/report.json
