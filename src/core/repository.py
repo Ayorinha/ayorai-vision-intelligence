@@ -1,9 +1,9 @@
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from .database import connect
 
 def now_iso():
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 def create_job(filename):
     import uuid
