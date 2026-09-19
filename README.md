@@ -1,9 +1,13 @@
 # AYORAI Vision Intelligence
 
+[![CI](https://github.com/Ayorinha/ayorai-vision-intelligence/actions/workflows/ci.yml/badge.svg)](https://github.com/Ayorinha/ayorai-vision-intelligence/actions/workflows/ci.yml) [![Security](https://github.com/Ayorinha/ayorai-vision-intelligence/actions/workflows/security.yml/badge.svg)](https://github.com/Ayorinha/ayorai-vision-intelligence/actions/workflows/security.yml)
+
 > **Secure, evaluated agentic AI platform for computer vision, local RAG, controlled tools and Human-in-the-Loop workflows.**
 
 **Author:** Anderson Leon Ayora · AI Engineer / Data Scientist  
 **Brand:** AYORAI TECH
+
+**Current release line: 2.1.0**
 
 ## Engineering thesis
 
@@ -131,6 +135,10 @@ docker compose up --build
 
 API: `http://localhost:8000`  
 Dashboard: `http://localhost:8501`
+
+## Release discipline
+
+A version is promoted only after the CI and Security workflows pass. The repository intentionally distinguishes a portfolio reference implementation from a production deployment: enterprise identity, distributed workers, durable object storage and production observability remain deployment extensions.
 
 ## Quality gates
 
