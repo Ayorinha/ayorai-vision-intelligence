@@ -6,30 +6,21 @@ from src.core.orchestrator import analyze
 from src.core.schemas import Remessa
 
 def main() -> int:
-    cases=json.loads(Path(__file__).with_name("cases.json").read_text())
-    passed=0
+    root = Path(__file__).parent
+    cases = json.loads((root / "cases.json").read_text())
+    results = []
     for case in cases:
-        result=analyze(
-            Remessa(
-                remessa_id=case["id"],
-                apresentante="SYNTHETIC",
-                quantidade_titulos=2,
-                valor_total=10,
-                arquivo="synthetic.rem",
-            ),
-            case["query"],
-        )
-        ok=(
-            (case["expected"]=="blocked" and result["status"]=="BLOCKED")
-            or (case["expected"]=="human_review" and result["requires_human_review"])
-            or (case["expected"]=="evidence" and bool(result["evidence"]))
-        )
-        passed += int(ok)
+        result = analyze(Remessa(remessa_id=case["id"], apresentante="SYNTHETIC", quantidade_titulos=2, valor_total=10, arquivo="synthetic.rem"), case["query"])
+        expected = case["expected"]
+        ok = ((expected == "blocked" and result["status"] == "BLOCKED") or (expected == "human_review" and result["requires_human_review"]) or (expected == "evidence" and bool(result["evidence"])))
+        results.append({"id": case["id"], "expected": expected, "passed": ok, "status": result["status"]})
         print(f"{case['id']}: {'PASS' if ok else 'FAIL'}")
-    total=len(cases)
-    rate=passed/total if total else 0
-    print(f"RESULT: {passed}/{total} cases passed ({rate:.1%})")
+    passed = sum(r["passed"] for r in results)
+    total = len(results)
+    summary = {"passed": passed, "total": total, "pass_rate": passed / total if total else 0, "cases": results}
+    (root / "report.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    print(f"RESULT: {passed}/{total} cases passed ({summary['pass_rate']:.1%})")
     return 0 if passed == total else 1
 
-if __name__=="__main__":
+if __name__ == "__main__":
     sys.exit(main())
