@@ -81,6 +81,9 @@ See `docs/THREAT_MODEL.md` and `docs/EVALUATION.md`.
 | Functional tests | ✅ |
 | Lint + CI | ✅ |
 | Dependency audit + Bandit | ✅ |
+| CodeQL analysis | ✅ |
+| Dependency review on pull requests | ✅ |
+| Dependabot updates | ✅ |
 | Threat model | ✅ |
 | Evaluation plan | ✅ |
 
