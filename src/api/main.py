@@ -57,7 +57,7 @@ def add_detection(detection:Detection):
 def tracks(): return [item.model_dump() for item in store.summary()]
 
 @app.post("/jobs",status_code=202)
-async def create_video_job(background_tasks:BackgroundTasks,file:UploadFile=File(...)  # noqa: B008):
+async def create_video_job(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
     if not file.filename: raise HTTPException(400,"Missing filename")
     suffix=Path(file.filename).suffix.lower()
     if suffix not in {".mp4",".mov",".avi",".mkv"}: raise HTTPException(415,"Unsupported video format")
