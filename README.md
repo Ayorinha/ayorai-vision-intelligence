@@ -188,7 +188,7 @@ GitHub Actions runs CI and security checks on repository changes.
 
 Only public or synthetic material belongs in this repository.
 
-**Do not commit IEPTB confidential information, personal data, credentials, private videos or regulated documents.**
+**Do not commit confidential information, personal data, credentials, private videos or regulated documents.**
 
 All adversarial scenarios are synthetic and non-destructive. This project is a defensive research and portfolio reference implementation, not a production financial security system.
 
