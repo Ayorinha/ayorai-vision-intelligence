@@ -16,8 +16,8 @@ def req(**kwargs):
     return AgentRequest(**base)
 
 
-def approved(request):
-    return HumanApproval("approval-1", "reviewer", "2026-09-19T09:00:00+00:00", ShieldEngine.request_digest(request))
+def approved(request, approved_at="2026-09-19T09:00:00+00:00"):
+    return HumanApproval("approval-1", "reviewer", approved_at, ShieldEngine.request_digest(request))
 
 
 def test_unknown_capability_is_blocked():
