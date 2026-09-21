@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/Ayorinha/ayorai-vision-intelligence/actions/workflows/ci.yml/badge.svg)](https://github.com/Ayorinha/ayorai-vision-intelligence/actions/workflows/ci.yml) [![Security](https://github.com/Ayorinha/ayorai-vision-intelligence/actions/workflows/security.yml/badge.svg)](https://github.com/Ayorinha/ayorai-vision-intelligence/actions/workflows/security.yml)
 
+![AYORAI AI Shield](assets/ayorai-shield-hero.jpg)
+
 > **Deterministic runtime defense for autonomous AI agents in regulated environments.**
 
 **Author:** Anderson Leon Ayora · AI Engineer / Data Scientist  
