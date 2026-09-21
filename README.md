@@ -169,7 +169,7 @@ pip-audit
 bandit -q -r src
 ```
 
-GitHub Actions runs CI and security checks on repository changes.
+GitHub Actions runs CI and security checks on repository changes. Security-sensitive changes are expected to map each claim to an implementation, regression test and CI evidence.
 
 ## Documentation
 
@@ -180,6 +180,7 @@ GitHub Actions runs CI and security checks on repository changes.
 - `docs/AGENT_IDENTITY_TRUST.md` — agent identity and delegation model
 - `docs/mcp.md` — MCP/tool architecture
 - `docs/AI_SHIELD.md` — AI Shield architecture
+- `docs/SECURITY_AUDIT.md` — security-hardening findings, evidence model and residual risks
 - `docs/agent.md` — evidence-first agent boundary
 - `SECURITY.md` — public-repository security policy
 - `CHANGELOG.md` — release history
