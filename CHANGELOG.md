@@ -38,3 +38,13 @@
 
 ## 2.0.0
 - Agentic computer vision platform with local-first RAG, tool orchestration, RPA and human review.
+
+
+## Unreleased — Security hardening baseline
+
+- hardened human-approval validation;
+- made egress allowlisting reachable while retaining default deny;
+- prevented REVIEW outcomes from consuming consequential replay keys;
+- bound transaction requests to their governed amount;
+- added regression tests for these security invariants;
+- documented audit findings, residual risks, and assurance gates.
