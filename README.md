@@ -171,6 +171,34 @@ bandit -q -r src
 
 GitHub Actions runs CI and security checks on repository changes.
 
+## 🤝 Contribute
+
+**You do not need to understand the entire architecture to contribute.**
+
+AYORAI AI Shield is open to focused contributions in AI safety, agent security, MCP/tool security, deterministic policy enforcement, evaluation, testing, documentation, observability, and developer experience.
+
+### Start here
+
+1. Read [CONTRIBUTING.md](CONTRIBUTING.md).
+2. Browse open issues labeled **good first issue** or **help wanted**.
+3. Pick one small, clearly scoped task.
+4. Add tests or evaluation evidence where applicable.
+5. Open a focused pull request.
+
+### Good first contributions
+
+- documentation and examples
+- synthetic adversarial evaluation cases
+- regression tests
+- MCP/tool security cases
+- authorization and policy tests
+- execution tracing examples
+- performance fixtures
+- local setup improvements
+- CI/developer tooling
+
+**Contribution principle:** small, reproducible, evidence-driven changes are preferred over large rewrites.
+
 ## Documentation
 
 - `docs/ARCHITECTURE.md` — system boundaries and data flow
