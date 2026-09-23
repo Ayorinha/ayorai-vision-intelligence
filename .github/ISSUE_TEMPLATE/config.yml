@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability reporting
+    url: https://github.com/Ayorinha/ayorai-vision-intelligence/security/policy
+    about: Please follow SECURITY.md instead of posting sensitive vulnerability details publicly.
