@@ -51,6 +51,46 @@ def test_delegation_is_scoped_to_subject_capability_and_resource():
     assert fabric.authorize(outside).decision == Decision.BLOCK
 
 
+
+def test_delegation_scope_rejects_similar_prefixes():
+    fabric = AgentTrustFabric()
+    fabric.register(
+        AgentIdentityRecord(
+            "agent-root", "team-a", 5, frozenset({"read_public"}), max_delegation_depth=1
+        )
+    )
+    fabric.register(AgentIdentityRecord("agent-child", "team-a", 4, frozenset({"read_public"})))
+
+    grant = DelegationGrant(
+        "grant-boundary",
+        "agent-root",
+        "agent-child",
+        "read_public",
+        "ledger/demo",
+    )
+    assert fabric.issue_delegation(grant).decision == Decision.ALLOW
+
+    allowed = request("agent-child", "read_public", "ledger/demo/item/123")
+    allowed = AgentRequest(
+        **{**allowed.__dict__, "metadata": {"delegation_grant_id": "grant-boundary"}}
+    )
+    assert fabric.authorize(allowed).decision == Decision.ALLOW
+
+    exact = request("agent-child", "read_public", "ledger/demo")
+    exact = AgentRequest(
+        **{**exact.__dict__, "metadata": {"delegation_grant_id": "grant-boundary"}}
+    )
+    assert fabric.authorize(exact).decision == Decision.ALLOW
+
+    attacker_controlled = request("agent-child", "read_public", "ledger/demo-secret")
+    attacker_controlled = AgentRequest(
+        **{
+            **attacker_controlled.__dict__,
+            "metadata": {"delegation_grant_id": "grant-boundary"},
+        }
+    )
+    assert fabric.authorize(attacker_controlled).decision == Decision.BLOCK
+
 def test_delegation_cannot_exceed_issuer_depth_or_capability():
     fabric = AgentTrustFabric()
     fabric.register(
