@@ -2,7 +2,7 @@ from pathlib import Path
 from datetime import UTC, datetime
 import csv
 import io
-from fastapi import BackgroundTasks, FastAPI, File, UploadFile, HTTPException
+from fastapi import BackgroundTasks, FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
 from src.core.database import init_db, connect
 from src.core.settings import settings
@@ -65,6 +65,8 @@ def tracks(): return [item.model_dump() for item in store.summary()]
 @app.post("/jobs",status_code=202)
 async def create_video_job(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
     if not file.filename: raise HTTPException(400,"Missing filename")
+    if len(file.filename) > 255:
+        raise HTTPException(400, "Filename is too long")
     suffix=Path(file.filename).suffix.lower()
     if suffix not in {".mp4",".mov",".avi",".mkv"}: raise HTTPException(415,"Unsupported video format")
     safe_name = Path(file.filename).name
@@ -114,7 +116,7 @@ def export_csv(job_id):
                              headers={"Content-Disposition":f"attachment; filename={job_id}.csv"})
 
 @app.get("/reviews")
-def reviews(status="PENDING"): return list_reviews(status)
+def reviews(status: str = Query(default="PENDING", pattern="^(PENDING|APPROVED|REJECTED)$")): return list_reviews(status)
 
 @app.post("/reviews/{review_id}")
 def review(review_id:int,decision:ReviewDecision):
@@ -122,10 +124,10 @@ def review(review_id:int,decision:ReviewDecision):
     except (KeyError,ValueError) as exc: raise HTTPException(400,str(exc))
 
 @app.post("/knowledge")
-def add_knowledge(source:str,content:str): return {"id":upsert_knowledge(source,content)}
+def add_knowledge(source: str = Query(min_length=1, max_length=500), content: str = Query(min_length=1, max_length=20000)): return {"id":upsert_knowledge(source,content)}
 
 @app.post("/agent/query")
-def agent_query(query:str): return agent.answer(query)
+def agent_query(query: str = Query(min_length=1, max_length=4000)): return agent.answer(query)
 
 @app.post("/mcp/call/{name}")
 def mcp_call(name: str, arguments: dict | None = None):
