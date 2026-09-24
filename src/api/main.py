@@ -68,8 +68,9 @@ async def create_video_job(background_tasks: BackgroundTasks, file: UploadFile =
     suffix=Path(file.filename).suffix.lower()
     if suffix not in {".mp4",".mov",".avi",".mkv"}: raise HTTPException(415,"Unsupported video format")
     safe_name = Path(file.filename).name
-    input_path = Path("data/input") / safe_name
-    output_path = Path("data/output") / (input_path.stem + "_tracked.mp4")
+    job_id = create_job(safe_name)
+    input_path = Path("data/input") / f"{job_id}{suffix}"
+    output_path = Path("data/output") / f"{job_id}_tracked.mp4"
     input_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -86,8 +87,7 @@ async def create_video_job(background_tasks: BackgroundTasks, file: UploadFile =
         input_path.unlink(missing_ok=True)
         raise
 
-    job_id=create_job(safe_name)
-    background_tasks.add_task(run_job,job_id,input_path,output_path)
+    background_tasks.add_task(run_job, job_id, input_path, output_path)
     return {"job_id":job_id,"status":"QUEUED"}
 
 @app.get("/jobs/{job_id}")
