@@ -24,4 +24,4 @@ jobs:
       - name: Lint
         run: ruff check src ai_shield tests
       - name: Tests
-        run: pytest -q
+        run: PYTHONPATH=. pytest -q
