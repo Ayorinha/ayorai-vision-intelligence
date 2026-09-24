@@ -20,4 +20,6 @@ jobs:
       - name: Lint
         run: ruff check src ai_shield tests
       - name: Tests
-        run: pytest -q
+        run: PYTHONPATH=. pytest -q
+      - name: API import smoke test
+        run: PYTHONPATH=. python -c "from src.api.main import app; print(app.title)"
