@@ -16,8 +16,8 @@ def req(**kwargs):
     return AgentRequest(**base)
 
 
-def approved(request):
-    return HumanApproval("approval-1", "reviewer", "2026-09-19T09:00:00+00:00", ShieldEngine.request_digest(request))
+def approved(request, approved_at="2026-09-19T09:00:00+00:00"):
+    return HumanApproval("approval-1", "reviewer", approved_at, ShieldEngine.request_digest(request))
 
 
 def test_unknown_capability_is_blocked():
@@ -95,3 +95,27 @@ def test_approval_cannot_be_replayed_for_modified_request():
     original = req(identity=Identity("u", "senior_analyst", 95), capability="read_restricted", classification=Classification.RESTRICTED, resource="record-A", human_approved=True)
     modified = AgentRequest(**{**original.__dict__, "resource": "record-B", "approval": approved(original)})
     assert e.evaluate(modified).decision == Decision.REVIEW
+
+
+def test_allowlisted_egress_can_pass_deterministic_boundary():
+    engine = ShieldEngine(approved_egress=frozenset({"https://approved.example"}))
+    request = req(external_network=True, destination="https://approved.example")
+    assert engine.evaluate(request).decision == Decision.ALLOW
+
+def test_transaction_amount_mismatch_is_blocked():
+    r = req(identity=Identity("u", "treasury", 95), capability="execute_transaction", classification=Classification.RESTRICTED, amount=1000, human_approved=True)
+    r = AgentRequest(**{**r.__dict__, "approval": approved(r)})
+    assert ShieldEngine().evaluate(r, TransactionProfile(100000, True, 0, 100)).decision == Decision.BLOCK
+
+def test_review_does_not_consume_replay_key():
+    e = ShieldEngine()
+    r = req(identity=Identity("u", "senior_analyst", 95), capability="read_restricted", classification=Classification.RESTRICTED)
+    assert e.evaluate(r).decision == Decision.REVIEW
+    approved_request = AgentRequest(**{**r.__dict__, "human_approved": True, "approval": approved(r)})
+    assert e.evaluate(approved_request).decision == Decision.ALLOW
+
+def test_malformed_or_future_approval_is_rejected():
+    r = req(identity=Identity("u", "senior_analyst", 95), capability="read_restricted", classification=Classification.RESTRICTED, human_approved=True)
+    future = approved(r, approved_at="2999-01-01T00:00:00+00:00")
+    r = AgentRequest(**{**r.__dict__, "approval": future})
+    assert ShieldEngine().evaluate(r).decision == Decision.REVIEW
