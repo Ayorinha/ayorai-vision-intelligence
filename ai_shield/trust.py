@@ -63,6 +63,13 @@ class AgentTrustFabric:
         self.grants[grant.grant_id] = grant
         return PolicyResult(Decision.ALLOW, "delegation_issued", ("delegation",))
 
+    @staticmethod
+    def _resource_in_scope(resource: str, prefix: str) -> bool:
+        """Return True only for the exact resource or a child resource."""
+        resource = resource.rstrip("/")
+        prefix = prefix.rstrip("/")
+        return resource == prefix or resource.startswith(prefix + "/")
+
     def authorize(self, request: AgentRequest) -> PolicyResult:
         identity = self.identities.get(request.agent_id)
         if identity is None:
@@ -81,7 +88,7 @@ class AgentTrustFabric:
                 return PolicyResult(Decision.BLOCK, "delegation_subject_mismatch", ("delegation",))
             if grant.capability != request.capability:
                 return PolicyResult(Decision.BLOCK, "delegation_capability_mismatch", ("delegation",))
-            if not request.resource.startswith(grant.resource_prefix):
+            if not self._resource_in_scope(request.resource, grant.resource_prefix):
                 return PolicyResult(Decision.BLOCK, "delegation_scope_exceeded", ("delegation",))
             if grant.expires_at is not None:
                 try:
