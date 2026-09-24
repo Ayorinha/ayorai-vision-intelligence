@@ -26,3 +26,11 @@ def test_generic_mcp_gateway_blocks_critical_tool():
         json={"review_id": 1, "reviewer": "human", "human_approved": True},
     )
     assert response.status_code == 403
+
+
+def test_generic_mcp_gateway_never_trusts_human_approval_from_caller():
+    response = client.post(
+        "/mcp/call/reject_review",
+        json={"review_id": 1, "reviewer": "attacker", "human_approved": True},
+    )
+    assert response.status_code == 403
