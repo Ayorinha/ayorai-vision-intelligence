@@ -28,9 +28,14 @@ def run_job(job_id,input_path,output_path):
         summaries=VisionPipeline(settings.model_path,job_id=job_id).process(str(input_path),str(output_path))
         update_job(job_id,"COMPLETED",output_path=str(output_path),progress=1,completed_at=datetime.now(UTC).isoformat())
         add_event(job_id,"job_completed",{"tracks":len(summaries)})
-    except Exception as exc:
-        update_job(job_id,"FAILED",error=str(exc),completed_at=datetime.now(UTC).isoformat())
-        add_event(job_id,"job_failed",{"error":str(exc)})
+    except Exception:
+        update_job(
+            job_id,
+            "FAILED",
+            error="Job processing failed",
+            completed_at=datetime.now(UTC).isoformat(),
+        )
+        add_event(job_id, "job_failed", {"error": "Job processing failed"})
 
 @app.get("/health")
 def health(): return {"status":"ok","environment":settings.environment,"version":"2.1.0"}
@@ -62,12 +67,26 @@ async def create_video_job(background_tasks: BackgroundTasks, file: UploadFile =
     if not file.filename: raise HTTPException(400,"Missing filename")
     suffix=Path(file.filename).suffix.lower()
     if suffix not in {".mp4",".mov",".avi",".mkv"}: raise HTTPException(415,"Unsupported video format")
-    data=await file.read()
-    if len(data)>settings.max_upload_mb*1024*1024: raise HTTPException(413,"Upload exceeds configured limit")
-    safe_name=Path(file.filename).name; input_path=Path("data/input")/safe_name
-    output_path=Path("data/output")/(input_path.stem+"_tracked.mp4")
-    input_path.parent.mkdir(parents=True,exist_ok=True); output_path.parent.mkdir(parents=True,exist_ok=True)
-    input_path.write_bytes(data); job_id=create_job(safe_name)
+    safe_name = Path(file.filename).name
+    input_path = Path("data/input") / safe_name
+    output_path = Path("data/output") / (input_path.stem + "_tracked.mp4")
+    input_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    max_bytes = settings.max_upload_mb * 1024 * 1024
+    written = 0
+    try:
+        with input_path.open("wb") as destination:
+            while chunk := await file.read(1024 * 1024):
+                written += len(chunk)
+                if written > max_bytes:
+                    raise HTTPException(413, "Upload exceeds configured limit")
+                destination.write(chunk)
+    except HTTPException:
+        input_path.unlink(missing_ok=True)
+        raise
+
+    job_id=create_job(safe_name)
     background_tasks.add_task(run_job,job_id,input_path,output_path)
     return {"job_id":job_id,"status":"QUEUED"}
 
