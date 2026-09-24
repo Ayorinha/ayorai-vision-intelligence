@@ -1,0 +1,10 @@
+# Repository ownership and security-sensitive review scope
+# Keep security-critical changes attributable to the repository owner.
+
+* @Ayorinha
+
+/.github/ @Ayorinha
+/ai_shield/ @Ayorinha
+/src/ @Ayorinha
+/tests/ @Ayorinha
+SECURITY.md @Ayorinha
