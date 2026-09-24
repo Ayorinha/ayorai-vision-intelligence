@@ -208,6 +208,7 @@ AYORAI AI Shield is open to focused contributions in AI safety, agent security, 
 - `docs/AGENT_IDENTITY_TRUST.md` — agent identity and delegation model
 - `docs/mcp.md` — MCP/tool architecture
 - `docs/AI_SHIELD.md` — AI Shield architecture
+- `docs/execution-tracing-example.md` — execution tracing example walkthrough
 - `docs/agent.md` — evidence-first agent boundary
 - `SECURITY.md` — public-repository security policy
 - `CHANGELOG.md` — release history
