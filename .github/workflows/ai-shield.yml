@@ -11,6 +11,7 @@ on:
       - "tests/test_frontier_regression.py"
       - "tests/test_trust_engine.py"
       - "tests/test_frontier_eval.py"
+      - "tests/test_prompt_injection.py"
       - ".github/workflows/ai-shield.yml"
   pull_request:
     paths:
@@ -22,6 +23,7 @@ on:
       - "tests/test_frontier_regression.py"
       - "tests/test_trust_engine.py"
       - "tests/test_frontier_eval.py"
+      - "tests/test_prompt_injection.py"
       - ".github/workflows/ai-shield.yml"
 
 permissions:
@@ -35,6 +37,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: python -m pip install --upgrade pip
-      - run: pip install pytest==9.0.3
-      - run: PYTHONPATH=. pytest -q tests/test_ai_shield.py tests/test_adversarial_ai_shield.py tests/test_frontier_eval.py tests/test_agent_trust.py tests/test_trust_engine.py tests/test_evaluation_lab.py tests/test_frontier_regression.py
+      - name: Install test runner
+        run: python -m pip install --upgrade pip && python -m pip install pytest==9.0.3
+      - name: Run AI Shield regression suite
+        run: PYTHONPATH=. python -m pytest -q tests/test_ai_shield.py tests/test_adversarial_ai_shield.py tests/test_frontier_eval.py tests/test_agent_trust.py tests/test_trust_engine.py tests/test_evaluation_lab.py tests/test_frontier_regression.py tests/test_prompt_injection.py
