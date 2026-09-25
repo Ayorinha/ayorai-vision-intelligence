@@ -138,17 +138,51 @@ python -m src.mcp.server
 
 ## Run locally
 
+Prerequisites:
+
+- Python 3.11 or newer
+- Git
+- A shell that can activate a Python virtual environment
+
+Create the environment and install the project from the repository root:
+
 ```bash
 python -m venv .venv
+```
+
+Activate it for your platform:
+
+```bash
+# Linux/macOS
 source .venv/bin/activate
-pip install -e ".[dev]"
+
+# Windows PowerShell
+# .venv\Scripts\Activate.ps1
+```
+
+Then install the application together with the development and security tooling:
+
+```bash
+python -m pip install -e ".[dev]"
+```
+
+Start the API:
+
+```bash
 uvicorn src.api.main:app --reload
 ```
 
-Dashboard:
+Dashboard (in the same activated environment):
 
 ```bash
 streamlit run dashboard/app.py
+```
+
+For a quick setup check before starting either server:
+
+```bash
+python -c "import src.api.main; print('API import OK')"
+pytest -q
 ```
 
 Docker:
