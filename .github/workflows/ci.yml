@@ -16,10 +16,10 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install
-        run: python -m pip install --upgrade pip && pip install -e ".[dev]"
+        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
       - name: Lint
         run: ruff check src ai_shield tests
       - name: Tests
-        run: PYTHONPATH=. pytest -q
+        run: PYTHONPATH=. python -m pytest -q
       - name: API import smoke test
         run: PYTHONPATH=. python -c "from src.api.main import app; print(app.title)"
