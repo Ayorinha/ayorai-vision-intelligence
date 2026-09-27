@@ -12,10 +12,14 @@ def test_benchmark_cases_are_safe_and_typed():
 
 def test_benchmark_runs_against_real_shield_engine():
     result = run()
-    assert result["synthetic_only"] is True
+    assert result["evidence_type"] == "executed ShieldEngine regression benchmark"
+    assert result["git_sha"]
+    assert result["github_run_id"]
     assert result["total_cases"] == len(build_cases())
     assert result["failed_cases"] == 0
     assert result["pass_rate"] == 1.0
+    assert all(item["passed"] for item in result["cases"])
+    assert all(item["latency_ms"] >= 0 for item in result["cases"])
 
 
 def test_benchmark_covers_core_b3_relevant_controls():
