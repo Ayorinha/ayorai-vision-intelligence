@@ -62,7 +62,7 @@ def build_cases() -> list[BenchmarkCase]:
     public_source = "B3 public market-data references"
     synthetic_source = "AYORAI synthetic scenario"
     low_risk = TransactionProfile(amount=5_000, known_destination=True, recent_velocity=1, identity_assurance=95)
-    review_risk = TransactionProfile(amount=20_000, known_destination=True, recent_velocity=2, identity_assurance=95)
+    review_risk = TransactionProfile(amount=20_000, known_destination=False, recent_velocity=2, identity_assurance=95)
     critical_risk = TransactionProfile(amount=150_000, known_destination=False, recent_velocity=6, identity_assurance=70)
 
     approved_low = _approved(
