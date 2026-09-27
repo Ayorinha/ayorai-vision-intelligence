@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import time
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -57,11 +58,7 @@ def _approved(request: AgentRequest) -> AgentRequest:
 
 
 def build_cases() -> list[BenchmarkCase]:
-    """Return B3-relevant, non-destructive scenarios using synthetic requests.
-
-    Public B3 market-data references are used only as business context; no private,
-    credentialed, trading, clearing, or production B3 system is contacted.
-    """
+    """Return B3-relevant, non-destructive scenarios using synthetic requests."""
     public_source = "B3 public market-data references"
     synthetic_source = "AYORAI synthetic scenario"
     low_risk = TransactionProfile(amount=5_000, known_destination=True, recent_velocity=1, identity_assurance=95)
@@ -129,7 +126,11 @@ def run() -> dict[str, object]:
     failed = total - passed
     return {
         "benchmark": "ayorai-ai-shield",
-        "version": "2",
+        "version": "3",
+        "evidence_type": "executed ShieldEngine regression benchmark",
+        "git_sha": os.getenv("GITHUB_SHA", "local"),
+        "github_run_id": os.getenv("GITHUB_RUN_ID", "local"),
+        "github_run_number": os.getenv("GITHUB_RUN_NUMBER", "local"),
         "scope": "B3-relevant synthetic security and transaction-governance scenarios",
         "real_data_policy": "Only public B3 references are used as context; no private or production data is ingested.",
         "synthetic_only": True,
@@ -146,15 +147,20 @@ def write_report(result: dict[str, object], output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "shield-benchmark.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     lines = [
-        "# AYORAI AI Shield Benchmark",
+        "# AYORAI AI Shield — Executed Benchmark Evidence",
         "",
+        f"- Evidence type: `{result['evidence_type']}`",
+        f"- Git commit: `{result['git_sha']}`",
+        f"- GitHub Actions run: `{result['github_run_id']}` (run #{result['github_run_number']})",
         f"- Scope: `{result['scope']}`",
         f"- Synthetic only: `{result['synthetic_only']}`",
-        f"- Cases: `{result['total_cases']}`",
+        f"- Cases executed: `{result['total_cases']}`",
         f"- Passed: `{result['passed_cases']}`",
         f"- Failed: `{result['failed_cases']}`",
         f"- Pass rate: `{result['pass_rate']:.1%}`",
         f"- Total runtime: `{result['total_latency_ms']} ms`",
+        "",
+        "This report is generated from the actual `ShieldEngine` execution path. It is evidence of the modeled scenarios only; it is not a production-security certification.",
         "",
         "| Case | Context | Mode | Expected | Observed | Result | Latency |",
         "|---|---|---|---|---|---|---:|",
