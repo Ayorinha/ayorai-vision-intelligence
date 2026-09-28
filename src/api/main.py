@@ -17,7 +17,7 @@ from src.vision.tracker import TrackStore
 from src.vision.confidence import classify_confidence
 from src.vision.pipeline import VisionPipeline
 
-app=FastAPI(title=settings.app_name,version="2.1.0")
+app=FastAPI(title=settings.app_name,version="3.0.0")
 store=TrackStore(); tools:ToolRegistry=build_registry(store)
 retriever=Retriever(); agent=VisionOrchestrator(tools,retriever)
 init_db()
@@ -38,7 +38,7 @@ def run_job(job_id,input_path,output_path):
         add_event(job_id, "job_failed", {"error": "Job processing failed"})
 
 @app.get("/health")
-def health(): return {"status":"ok","environment":settings.environment,"version":"2.1.0"}
+def health(): return {"status":"ok","environment":settings.environment,"version":"3.0.0"}
 
 @app.get("/ready")
 def ready(): return {"ready":True,"model":settings.model_path,"database":"sqlite"}
