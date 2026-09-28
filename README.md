@@ -1,200 +1,134 @@
 # AYORAI AI Shield
 
-[![CI](https://github.com/Ayorinha/ayorai-vision-intelligence/actions/workflows/ci.yml/badge.svg)](https://github.com/Ayorinha/ayorai-vision-intelligence/actions/workflows/ci.yml) [![Security](https://github.com/Ayorinha/ayorai-vision-intelligence/actions/workflows/security.yml/badge.svg)](https://github.com/Ayorinha/ayorai-vision-intelligence/actions/workflows/security.yml)
+[![CI](https://github.com/Ayorinha/ayorai-vision-intelligence/actions/workflows/ci.yml/badge.svg)](https://github.com/Ayorinha/ayorai-vision-intelligence/actions/workflows/ci.yml)
+[![Security](https://github.com/Ayorinha/ayorai-vision-intelligence/actions/workflows/security.yml/badge.svg)](https://github.com/Ayorinha/ayorai-vision-intelligence/actions/workflows/security.yml)
+[![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB.svg)](https://www.python.org/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-![AYORAI AI Shield](assets/ayorai-shield-hero.jpg)
-
-> **Deterministic runtime defense for autonomous AI agents in regulated environments.**
-
-**Author:** Anderson Leon Ayora · AI Engineer / Data Scientist  
-**Brand:** AYORAI TECH
-
-**Current release:** 3.0.0
+> **Deterministic runtime security and policy enforcement for autonomous AI agents.**
 
 ## Security thesis
 
 > **Intelligence does not grant authority.**
 
-**The model proposes. The Shield decides.**
+LLMs and autonomous agents can propose actions, but model output should not automatically become execution authority.
 
-AYORAI AI Shield is a public-safe defensive reference architecture for autonomous agents operating around high-value or regulated workflows. It separates model reasoning from deterministic authorization and keeps consequential actions behind explicit policy, transaction governance, egress controls, provenance and isolation boundaries.
+AYORAI AI Shield is a defensive reference implementation that places explicit security and authorization controls between **agent reasoning** and **consequential tool execution**.
 
-The repository uses synthetic/public demonstration data only. It does not connect to real financial infrastructure and does not implement real-world intrusion capabilities.
+```text
+                 AGENT / LLM
+                     │
+                     │ proposes action
+                     ▼
+            ┌───────────────────┐
+            │   IDENTITY /      │
+            │   TRUST CONTEXT   │
+            └─────────┬─────────┘
+                      ▼
+            ┌───────────────────┐
+            │   POLICY ENGINE   │
+            └─────────┬─────────┘
+                      ▼
+            ┌───────────────────┐
+            │ AUTHORIZATION +   │
+            │ RISK GOVERNANCE   │
+            └─────────┬─────────┘
+                 ┌────┴────┐
+                 │         │
+               DENY      ALLOW
+                 │         │
+                 │         ▼
+                 │   TOOL / MCP
+                 │   EXECUTION
+                 │         │
+                 └────┬────┘
+                      ▼
+             AUDIT / PROVENANCE
+```
 
-## Three security pillars
+### Core principle
 
-### 1. AYORAI AI Shield
-Runtime defense for autonomous agents:
-- deterministic capability authorization
-- transaction risk governance
-- default-deny egress
-- data classification
-- emergency isolation
-- tamper-evident provenance and replay controls
-- synthetic adversarial evaluation
+**Reasoning ≠ Authorization ≠ Execution**
 
-### 2. Agent Identity & Trust Fabric
-Identity and delegation controls for agentic systems:
-- scoped agent identity
-- capability and trust boundaries
-- agent-to-agent delegation
-- delegation depth controls
-- revocation
-- policy-driven authorization
+## What this project demonstrates
 
-### 3. Frontier Agent Evaluation Lab
-A defensive evaluation layer for advanced agents:
-- adversarial scenarios
-- frontier-agent regression tests
-- security evaluation matrix
-- deterministic safety assertions
-- machine-readable evaluation coverage
+- deterministic tool authorization;
+- least-privilege agent capabilities;
+- identity and trust boundaries;
+- transaction risk governance;
+- default-deny egress controls;
+- provenance and replay-aware execution;
+- MCP/tool security boundaries;
+- adversarial security evaluation;
+- structured auditability;
+- defensive isolation mechanisms.
+
+The repository uses public or synthetic demonstration data. It does **not** connect to real financial infrastructure and does not provide offensive intrusion tooling.
+
+## Threat Model
+
+Potentially untrusted inputs include user instructions, retrieved documents, web content, tool outputs, MCP metadata, persistent memory and model-generated tool arguments.
+
+Protected assets include credentials, sensitive data, external APIs, filesystem resources, high-impact transactions, agent identity/delegated authority and audit evidence.
+
+**Security objective:** prevent an untrusted or compromised agent context from acquiring capabilities beyond the authority explicitly granted by policy.
+
+See `docs/THREAT_MODEL.md`, `docs/ARCHITECTURE.md` and `docs/EVALUATION.md`.
+
+## Security Controls
+
+| Control | Purpose |
+|---|---|
+| Deterministic policy | Prevent model output from becoming implicit authority |
+| Tool allowlisting | Restrict available capabilities |
+| Least privilege | Minimize agent permissions |
+| Transaction governance | Apply explicit rules to consequential actions |
+| Egress control | Prevent uncontrolled external data transfer |
+| Identity/trust context | Bind actions to explicit agent identity |
+| Delegation limits | Control agent-to-agent authority propagation |
+| Provenance | Preserve evidence about security decisions |
+| Replay controls | Support detection and analysis of repeated actions |
+| Isolation | Provide emergency containment |
+| Adversarial tests | Validate security behavior against synthetic attacks |
+
+## Evaluation
+
+Security claims are treated as hypotheses that must be tested.
+
+The evaluation layer covers controlled, non-destructive scenarios such as prompt injection, goal hijacking, tool abuse, privilege escalation, data exfiltration, malicious tool metadata and unsafe tool arguments.
+
+Report at minimum: attack success rate, false-positive rate, false-negative rate, policy decision latency, throughput and regression status.
+
+**Benchmark numbers are published only when produced by the repository’s reproducible benchmark harness.** No unsupported security or performance percentage is claimed here.
 
 ## Architecture
 
 ```text
-             AUTONOMOUS AGENT
-                    │
-                    ▼
-             IDENTITY & TRUST
-                    │
-                    ▼
-             POLICY ENGINE
-                    │
-          ┌─────────┴─────────┐
-          ▼                   ▼
-   TRANSACTION           TOOL / MCP
-    GOVERNOR              FIREWALL
-          │                   │
-          └─────────┬─────────┘
-                    ▼
-             EGRESS CONTROL
-                    │
-                    ▼
-          PROVENANCE / REPLAY
-                    │
-                    ▼
-              ISOLATION
-                    │
-                    ▼
-          SYNTHETIC EVALUATION
+Identity → Policy → Authorization → Risk → Tool/MCP Boundary → Execution → Audit
 ```
 
-The original computer-vision / RAG / human-review platform remains part of the repository as the application layer and demonstration environment.
+The separation is intentional: detection is not authorization, authorization is not execution.
 
-## Implemented capabilities
+## MCP Security Boundary
 
-| Capability | Status |
-|---|---|
-| Deterministic tool policy | ✅ |
-| AI Shield runtime defense | ✅ |
-| Agent identity & trust fabric | ✅ |
-| Agent-to-agent delegation controls | ✅ |
-| Transaction risk governance | ✅ |
-| Default-deny egress | ✅ |
-| Emergency isolation | ✅ |
-| Attack provenance / replay defense | ✅ |
-| Frontier-agent evaluation lab | ✅ |
-| Adversarial regression tests | ✅ |
-| Least-privilege MCP server | ✅ |
-| Streamable HTTP MCP transport | ✅ |
-| Local-first RAG | ✅ |
-| Computer vision + tracking | ✅ |
-| Human review queue | ✅ |
-| FastAPI API | ✅ |
-| Streamlit dashboard | ✅ |
-| RPA input discovery | ✅ |
-| Docker / Compose | ✅ |
-| Pytest + Ruff | ✅ |
-| Dependency audit + Bandit | ✅ |
-| GitHub Actions CI/security | ✅ |
-| Threat model + evaluation docs | ✅ |
+The repository includes a Python MCP implementation designed around a least-privilege security boundary.
 
-## MCP security boundary
+The default design favors explicit tool exposure, read-only capabilities where possible, validation before consequential operations, policy enforcement before execution and structured security events.
 
-The repository includes a protocol-compliant MCP server using the official Python SDK. The exposed MCP surface is intentionally least-privilege and read-only by default. Consequential review operations remain behind the application policy boundary.
+Local development: `python -m src.mcp.server`
 
-Run locally:
+## Local Development
 
-```bash
-python -m src.mcp.server
-```
-
-## API
-
-- `GET /health`
-- `GET /ready`
-- `GET /tools`
-- `GET /metrics`
-- `POST /jobs`
-- `GET /jobs/{job_id}`
-- `GET /jobs/{job_id}/detections`
-- `GET /jobs/{job_id}/events`
-- `GET /reviews`
-- `POST /reviews/{review_id}`
-- `POST /knowledge`
-- `POST /agent/query`
-- `POST /mcp/call/{name}`
-
-## Run locally
-
-Prerequisites:
-
-- Python 3.11 or newer
-- Git
-- A shell that can activate a Python virtual environment
-
-Create the environment and install the project from the repository root:
+Requires Python 3.11+.
 
 ```bash
 python -m venv .venv
-```
-
-Activate it for your platform:
-
-```bash
-# Linux/macOS
 source .venv/bin/activate
-
-# Windows PowerShell
-# .venv\Scripts\Activate.ps1
-```
-
-Then install the application together with the development and security tooling:
-
-```bash
 python -m pip install -e ".[dev]"
-```
-
-Start the API:
-
-```bash
-uvicorn src.api.main:app --reload
-```
-
-Dashboard (in the same activated environment):
-
-```bash
-streamlit run dashboard/app.py
-```
-
-For a quick setup check before starting either server:
-
-```bash
-python -c "import src.api.main; print('API import OK')"
 pytest -q
 ```
 
-Docker:
-
-```bash
-docker compose up --build
-```
-
-API: `http://localhost:8000`  
-Dashboard: `http://localhost:8501`
-
-## Quality and security gates
+Quality/security checks:
 
 ```bash
 ruff check .
@@ -203,82 +137,83 @@ pip-audit
 bandit -q -r src
 ```
 
-GitHub Actions runs CI and security checks on repository changes.
+Docker: `docker compose up --build`
 
-## 🤝 Contribute
+## Engineering Quality Gates
 
-**You do not need to understand the entire architecture to contribute.**
+- automated tests and coverage reporting;
+- Ruff linting;
+- static security analysis;
+- dependency auditing;
+- GitHub Actions CI;
+- security regression tests;
+- reproducible evaluation;
+- documented security assumptions.
 
-AYORAI AI Shield is open to focused contributions in AI safety, agent security, MCP/tool security, deterministic policy enforcement, evaluation, testing, documentation, observability, and developer experience.
+Future quality gates include SBOM generation, supply-chain verification and OpenTelemetry-compatible observability.
 
-### Start here
+## Design Principles
 
-1. Read [CONTRIBUTING.md](CONTRIBUTING.md).
-2. Browse open issues labeled **good first issue** or **help wanted**.
-3. Pick one small, clearly scoped task.
-4. Add tests or evaluation evidence where applicable.
-5. Open a focused pull request.
+### Default Deny
+Capabilities are not granted merely because an agent requested them.
 
-### Good first contributions
+### Least Privilege
+An agent receives only the minimum authority necessary for its task.
 
-- documentation and examples
-- synthetic adversarial evaluation cases
-- regression tests
-- MCP/tool security cases
-- authorization and policy tests
-- execution tracing examples
-- performance fixtures
-- local setup improvements
-- CI/developer tooling
+### Explicit Trust Boundaries
+User input, retrieved content, memory, tools and model output are not implicitly trusted.
 
-**Contribution principle:** small, reproducible, evidence-driven changes are preferred over large rewrites.
+### Evidence Before Claims
+Security and performance claims require reproducible tests or benchmarks.
 
-## Documentation
+### Fail Closed
+Security failures must not silently become authorization.
 
-- `docs/ARCHITECTURE.md` — system boundaries and data flow
-- `docs/THREAT_MODEL.md` — threats, controls and residual risk
-- `docs/EVALUATION.md` — safety and quality evaluation methodology
-- `docs/FRONTIER_AI_EVALUATION.md` — frontier-agent evaluation lab
-- `docs/AGENT_IDENTITY_TRUST.md` — agent identity and delegation model
-- `docs/mcp.md` — MCP/tool architecture
-- `docs/AI_SHIELD.md` — AI Shield architecture
-- `docs/execution-tracing-example.md` — execution tracing example walkthrough
-- `docs/agent.md` — evidence-first agent boundary
-- `SECURITY.md` — public-repository security policy
-- `CHANGELOG.md` — release history
-
-## Demo data and safety scope
-
-Only public or synthetic material belongs in this repository.
-
-**Do not commit confidential information, personal data, credentials, private videos or regulated documents.**
-
-All adversarial scenarios are synthetic and non-destructive. This project is a defensive research and portfolio reference implementation, not a production financial security system.
+### Public-Safe Research
+Examples use synthetic/public data and non-destructive scenarios.
 
 ## Roadmap
 
-The core reference implementation is complete. Future work is intentionally limited to deployment and evaluation extensions:
+### v0.1 — Policy Enforcement Foundation
+- deterministic policy engine
+- tool authorization
+- audit events
+- threat model
+- regression tests
 
-1. Reproducible adversarial benchmark corpus.
-2. Embedding/vector retrieval benchmark.
-3. Durable distributed worker queue.
-4. PostgreSQL/object-storage deployment profile.
-5. Enterprise identity/RBAC integration.
-6. OpenTelemetry-compatible observability.
+### v0.5 — Agent Security Runtime
+- MCP security boundary
+- adversarial evaluation harness
+- sensitive-data controls
+- policy-as-code
+- observability
 
-These are extensions, not claims of functionality already present.
+### v1.0 — Production Reference
+- stable public API
+- reproducible benchmark suite
+- OpenTelemetry
+- signed audit evidence
+- deployment reference
+- comprehensive security evaluation
 
-## Portfolio positioning
+## Contributing
 
-**AI Safety · AI Engineering · Agentic AI · LLM Security · MCP · RAG · Python · Computer Vision · FastAPI · RPA · Docker · CI/CD · Human-in-the-Loop**
+Focused contributions are welcome in agent security, policy enforcement, MCP security, adversarial evaluation, testing, observability, documentation and performance engineering.
+
+See `CONTRIBUTING.md` before opening a pull request. Security vulnerabilities should follow `SECURITY.md`.
+
+## Scope and Disclaimer
+
+AYORAI AI Shield is a defensive engineering and research reference implementation. It is **not** a certification, guarantee of agent safety, or substitute for an organization’s security architecture, risk management, compliance controls or professional security assessment.
+
+## Author
+
+**Anderson Leon Ayora**
+
+AI Engineer · Applied AI · AI Safety
+
+**AYORAI · Applied Intelligence**
 
 ## License
 
 MIT
-
-## Author
-
-**Anderson Leon Ayora**  
-AI Engineer | Applied AI · Document Intelligence · Generative AI · Intelligent Automation
-
-Part of the **AYORAI TECH** engineering portfolio.
