@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+from time import perf_counter
 
 from .egress import evaluate
 from .isolation import SovereignIsolator
 from .models import AgentRequest, Decision, PolicyResult
 from .policy import authorize
 from .provenance import ProvenanceGraph
+from .telemetry import NullTelemetry, TelemetryEvent, TelemetrySink
 from .transaction import TransactionProfile, govern
 from .trust import AgentTrustFabric
 
@@ -15,10 +17,15 @@ from .trust import AgentTrustFabric
 class ShieldEngine:
     """Deterministic decision pipeline. No LLM is used for authorization."""
 
-    def __init__(self, trust_fabric: AgentTrustFabric | None = None):
+    def __init__(
+        self,
+        trust_fabric: AgentTrustFabric | None = None,
+        telemetry: TelemetrySink | None = None,
+    ):
         self.isolator = SovereignIsolator()
         self.provenance = ProvenanceGraph()
         self.trust_fabric = trust_fabric
+        self.telemetry = telemetry or NullTelemetry()
         self._seen_requests: set[str] = set()
 
     @staticmethod
@@ -53,6 +60,7 @@ class ShieldEngine:
         return request.capability in {"execute_transaction", "read_restricted"}
 
     def evaluate(self, request: AgentRequest, transaction: TransactionProfile | None = None) -> PolicyResult:
+        started = perf_counter()
         replay_key = request.idempotency_key or request.request_id
         if self._consequential(request) and replay_key in self._seen_requests:
             result = PolicyResult(Decision.BLOCK, "replay_detected", ("replay_protection",))
@@ -88,6 +96,20 @@ class ShieldEngine:
                 "request_digest": self.request_digest(request),
                 "trust_fabric": self.trust_fabric is not None,
             },
+        )
+        self.telemetry.emit(
+            TelemetryEvent(
+                name="ai_shield.policy.evaluate",
+                attributes={
+                    "decision": result.decision.value,
+                    "reason": result.reason,
+                    "controls": list(result.controls),
+                    "request_digest": self.request_digest(request),
+                    "duration_ms": (perf_counter() - started) * 1000.0,
+                    "trust_fabric": self.trust_fabric is not None,
+                    "consequential": self._consequential(request),
+                },
+            )
         )
         return result
 
