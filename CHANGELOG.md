@@ -38,3 +38,19 @@
 
 ## 2.0.0
 - Agentic computer vision platform with local-first RAG, tool orchestration, RPA and human review.
+
+## Unreleased — 2026-09-29
+
+### Agent Runtime Security
+- Added a fail-closed runtime control plane combining MCP integrity, containment, data-flow controls and existing deterministic authorization.
+- Added TOFU-pinned MCP tool definitions with drift and poisoning-signal detection.
+- Added authenticated MCP publisher manifests for controlled reference deployments.
+- Added restricted-data egress and output-volume controls.
+- Added explicit session containment and tool revocation primitives.
+- Added cryptographic algorithm inventory for migration planning.
+- Added runtime-attestation integration interface without claiming TEE security.
+- Added mandatory short-lived agent delegation with issuer/subject/capability/resource constraints.
+- Added SHA-256 grant binding, grant-ID reuse protection, expiry/TTL enforcement and explicit revocation tests.
+- Added regression tests for tool poisoning, drift, restricted-data egress, containment and delegation abuse.
+- Added ADR 0002 and MCP runtime-security documentation.
+- Added no unsupported security or performance claims.

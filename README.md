@@ -15,53 +15,55 @@ LLMs and autonomous agents can propose actions, but model output should not auto
 
 AYORAI AI Shield is a defensive reference implementation that places explicit security and authorization controls between **agent reasoning** and **consequential tool execution**.
 
+## Runtime control plane
+
+The current security boundary composes four deterministic stages before execution:
+
 ```text
-                 AGENT / LLM
-                     │
-                     │ proposes action
-                     ▼
-            ┌───────────────────┐
-            │   IDENTITY /      │
-            │   TRUST CONTEXT   │
-            └─────────┬─────────┘
-                      ▼
-            ┌───────────────────┐
-            │   POLICY ENGINE   │
-            └─────────┬─────────┘
-                      ▼
-            ┌───────────────────┐
-            │ AUTHORIZATION +   │
-            │ RISK GOVERNANCE   │
-            └─────────┬─────────┘
-                 ┌────┴────┐
-                 │         │
-               DENY      ALLOW
-                 │         │
-                 │         ▼
-                 │   TOOL / MCP
-                 │   EXECUTION
-                 │         │
-                 └────┬────┘
-                      ▼
-             AUDIT / PROVENANCE
+Agent
+  |
+  v
+Agent Identity / Delegation
+  |
+  v
+MCP Tool Integrity
+  |  pinned metadata / drift / poisoning signals
+  v
+Runtime Containment
+  |
+  v
+Data-flow Guard
+  |  sensitivity / destination / volume
+  v
+Deterministic Policy + Authorization
+  |
+  v
+Transaction / Egress Governance
+  |
+  v
+Tool / MCP Execution
+  |
+  v
+Tamper-evident Provenance
 ```
 
-### Core principle
+The separation is intentional:
 
 **Reasoning ≠ Authorization ≠ Execution**
 
 ## What this project demonstrates
 
 - deterministic tool authorization;
-- least-privilege agent capabilities;
-- identity and trust boundaries;
+- scoped agent identity and delegation;
+- MCP tool-definition integrity and drift detection;
+- fail-closed runtime containment;
+- restricted-data egress controls;
 - transaction risk governance;
-- default-deny egress controls;
 - provenance and replay-aware execution;
-- MCP/tool security boundaries;
+- crypto-agility inventory and migration interfaces;
+- runtime-attestation integration interface;
 - adversarial security evaluation;
-- structured auditability;
-- defensive isolation mechanisms.
+- structured auditability.
 
 The repository uses public or synthetic demonstration data. It does **not** connect to real financial infrastructure and does not provide offensive intrusion tooling.
 
@@ -73,49 +75,43 @@ Protected assets include credentials, sensitive data, external APIs, filesystem 
 
 **Security objective:** prevent an untrusted or compromised agent context from acquiring capabilities beyond the authority explicitly granted by policy.
 
-See `docs/THREAT_MODEL.md`, `docs/ARCHITECTURE.md` and `docs/EVALUATION.md`.
+See `docs/THREAT_MODEL.md`, `docs/ARCHITECTURE.md`, `docs/MCP_RUNTIME_SECURITY.md` and `docs/EVALUATION.md`.
 
 ## Security Controls
 
 | Control | Purpose |
 |---|---|
 | Deterministic policy | Prevent model output from becoming implicit authority |
-| Tool allowlisting | Restrict available capabilities |
+| Agent identity/delegation | Bind actions to explicit principals and scoped authority |
+| MCP integrity registry | Pin tool metadata, verify trusted publishers and fail closed on drift |
+| Tool poisoning detection | Detect known malicious instruction patterns before execution |
+| Data-flow guard | Restrict sensitive outbound data by destination and volume |
+| Runtime containment | Suspend sessions and revoke execution/egress |
 | Least privilege | Minimize agent permissions |
 | Transaction governance | Apply explicit rules to consequential actions |
-| Egress control | Prevent uncontrolled external data transfer |
-| Identity/trust context | Bind actions to explicit agent identity |
-| Delegation limits | Control agent-to-agent authority propagation |
 | Provenance | Preserve evidence about security decisions |
 | Replay controls | Support detection and analysis of repeated actions |
-| Isolation | Provide emergency containment |
+| Crypto inventory | Track algorithms for migration planning |
+| Runtime attestation interface | Provide a seam for trusted execution environments |
 | Adversarial tests | Validate security behavior against synthetic attacks |
+
+## MCP Security Boundary
+
+MCP tool metadata is treated as security-sensitive input. Tools must be explicitly pinned before execution; changed definitions fail closed until reviewed and pinned again.
+
+The implementation is intentionally deterministic and does not ask an LLM whether a tool is safe.
+
+See `docs/MCP_RUNTIME_SECURITY.md`.
 
 ## Evaluation
 
 Security claims are treated as hypotheses that must be tested.
 
-The evaluation layer covers controlled, non-destructive scenarios such as prompt injection, goal hijacking, tool abuse, privilege escalation, data exfiltration, malicious tool metadata and unsafe tool arguments.
+The evaluation layer covers controlled, non-destructive scenarios such as prompt injection, goal hijacking, tool abuse, privilege escalation, data exfiltration, malicious tool metadata, unsafe tool arguments, tool-definition drift and runtime containment.
 
 Report at minimum: attack success rate, false-positive rate, false-negative rate, policy decision latency, throughput and regression status.
 
 **Benchmark numbers are published only when produced by the repository’s reproducible benchmark harness.** No unsupported security or performance percentage is claimed here.
-
-## Architecture
-
-```text
-Identity → Policy → Authorization → Risk → Tool/MCP Boundary → Execution → Audit
-```
-
-The separation is intentional: detection is not authorization, authorization is not execution.
-
-## MCP Security Boundary
-
-The repository includes a Python MCP implementation designed around a least-privilege security boundary.
-
-The default design favors explicit tool exposure, read-only capabilities where possible, validation before consequential operations, policy enforcement before execution and structured security events.
-
-Local development: `python -m src.mcp.server`
 
 ## Local Development
 
@@ -150,7 +146,7 @@ Docker: `docker compose up --build`
 - reproducible evaluation;
 - documented security assumptions.
 
-Future quality gates include SBOM generation, supply-chain verification and OpenTelemetry-compatible observability.
+Future quality gates include SBOM generation, asymmetric supply-chain signatures/key rotation, SBOM attestation and OpenTelemetry-compatible observability.
 
 ## Design Principles
 
@@ -183,6 +179,10 @@ Examples use synthetic/public data and non-destructive scenarios.
 
 ### v0.5 — Agent Security Runtime
 - MCP security boundary
+- agent identity/delegation
+- tool-definition integrity
+- data-flow controls
+- runtime containment
 - adversarial evaluation harness
 - sensitive-data controls
 - policy-as-code
@@ -195,10 +195,19 @@ Examples use synthetic/public data and non-destructive scenarios.
 - signed audit evidence
 - deployment reference
 - comprehensive security evaluation
+- authenticated tool/server provenance
+- confidential-computing provider integration
+- post-quantum migration guidance
+
+## Research boundaries
+
+The new controls are deliberately scoped to evidence-backed engineering directions. They do not claim complete MCP security, complete prompt-injection detection, confidential-computing guarantees, or post-quantum security.
+
+Performance and security percentages are not inferred from vendor or academic results. They must be generated by the repository benchmark harness before being presented as AYORAI measurements.
 
 ## Contributing
 
-Focused contributions are welcome in agent security, policy enforcement, MCP security, adversarial evaluation, testing, observability, documentation and performance engineering.
+Focused contributions are welcome in agent security, policy enforcement, MCP security, adversarial evaluation, testing, observability and performance engineering.
 
 See `CONTRIBUTING.md` before opening a pull request. Security vulnerabilities should follow `SECURITY.md`.
 
