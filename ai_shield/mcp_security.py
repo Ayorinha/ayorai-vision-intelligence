@@ -24,7 +24,14 @@ class ToolDefinition:
 
     def canonical(self) -> str:
         return "\n".join(
-            (self.name, self.description, self.input_schema, self.publisher, self.endpoint, self.version)
+            (
+                self.name,
+                self.description,
+                self.input_schema,
+                self.publisher,
+                self.endpoint,
+                self.version,
+            )
         )
 
     def digest(self) -> str:
@@ -70,15 +77,34 @@ class ToolIntegrityRegistry:
         digest = definition.digest()
         signals = self._signals(definition)
         if definition.name in self._revoked:
-            return ToolAssessment(False, "tool_revoked", digest, poisoning_signals=signals)
+            return ToolAssessment(
+                False,
+                "tool_revoked",
+                digest,
+                poisoning_signals=signals,
+            )
         pinned = self._pinned.get(definition.name)
         if signals:
-            return ToolAssessment(False, "tool_poisoning_signal", digest, drift=pinned is not None and pinned != digest, poisoning_signals=signals)
+            return ToolAssessment(
+                False,
+                "tool_poisoning_signal",
+                digest,
+                drift=pinned is not None and pinned != digest,
+                poisoning_signals=signals,
+            )
         if pinned is None:
             return ToolAssessment(False, "tool_not_pinned", digest)
         if pinned != digest:
-            return ToolAssessment(False, "tool_definition_drift", digest, drift=True)
+            return ToolAssessment(
+                False,
+                "tool_definition_drift",
+                digest,
+                drift=True,
+            )
         return ToolAssessment(True, "tool_integrity_verified", digest)
 
     def snapshot(self) -> dict[str, int]:
-        return {"pinned_tools": len(self._pinned), "revoked_tools": len(self._revoked)}
+        return {
+            "pinned_tools": len(self._pinned),
+            "revoked_tools": len(self._revoked),
+        }
