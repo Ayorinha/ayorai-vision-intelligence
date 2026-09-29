@@ -8,6 +8,7 @@ AYORAI treats MCP tool metadata as security-sensitive input rather than trusted 
 - definition drift / rug-pull style changes;
 - unpinned tool discovery;
 - revoked tools;
+- authenticated publisher manifests;
 - restricted-data egress;
 - high-volume outbound flows;
 - runtime containment.
@@ -24,11 +25,11 @@ The registry is intentionally deterministic. It does not ask an LLM whether a to
 
 ## Limits
 
-Pattern-based poisoning detection is not a complete semantic detector. It is one layer in defense-in-depth. Deployments should add publisher provenance, authenticated transport, server-side authorization, endpoint allowlists and independent security review.
+Pattern-based poisoning detection is not a complete semantic detector. It is one layer in defense-in-depth. Deployments should add asymmetric publisher signatures, authenticated transport, server-side authorization, endpoint allowlists and independent security review. The included HMAC reference primitive is for controlled reference deployments; it is not non-repudiation and does not replace a production key-management system.
 
 ## Research directions
 
-- cryptographically signed tool manifests;
+- asymmetric cryptographically signed tool manifests and key rotation;
 - authenticated MCP server identity;
 - semantic diffing of tool descriptions and schemas;
 - policy enforcement at a gateway;
