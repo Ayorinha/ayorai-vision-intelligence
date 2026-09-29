@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import time
+import statistics
 from dataclasses import dataclass, replace
 from pathlib import Path
 
@@ -124,6 +125,18 @@ def run() -> dict[str, object]:
     total = len(results)
     passed = sum(bool(item["passed"]) for item in results)
     failed = total - passed
+    latencies = sorted(float(item["latency_ms"]) for item in results)
+    def percentile(pct: float) -> float:
+        if not latencies:
+            return 0.0
+        if len(latencies) == 1:
+            return latencies[0]
+        rank = (len(latencies) - 1) * pct
+        lower = int(rank)
+        upper = min(lower + 1, len(latencies) - 1)
+        fraction = rank - lower
+        return latencies[lower] + (latencies[upper] - latencies[lower]) * fraction
+
     return {
         "benchmark": "ayorai-ai-shield",
         "version": "3",
@@ -139,6 +152,13 @@ def run() -> dict[str, object]:
         "failed_cases": failed,
         "pass_rate": passed / total if total else 1.0,
         "total_latency_ms": round((time.perf_counter() - started) * 1000, 3),
+        "latency_ms": {
+            "p50": round(percentile(0.50), 3),
+            "p95": round(percentile(0.95), 3),
+            "p99": round(percentile(0.99), 3),
+            "mean": round(statistics.fmean(latencies), 3) if latencies else 0.0,
+            "max": round(max(latencies), 3) if latencies else 0.0,
+        },
         "cases": results,
     }
 
