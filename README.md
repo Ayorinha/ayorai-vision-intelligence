@@ -51,6 +51,25 @@ The separation is intentional:
 
 **Reasoning ≠ Authorization ≠ Execution**
 
+## Architecture diagram
+
+~~~mermaid
+flowchart LR
+    A[AI Agent] --> I[Identity / Delegation]
+    I --> M[MCP Tool Integrity]
+    M --> C[Runtime Containment]
+    C --> D[Data-flow Guard]
+    D --> P[Deterministic Policy]
+    P --> T[Transaction / Egress Governance]
+    T --> X[Tool / MCP Execution]
+    X --> E[Provenance / Audit]
+    P -. deny .-> Z[Blocked]
+    D -. sensitive egress .-> Z
+    M -. drift / poisoning .-> Z
+~~~
+
+> **Security boundary:** reasoning is separated from authorization and consequential execution.
+
 ## What this project demonstrates
 
 - deterministic tool authorization;
