@@ -6,7 +6,7 @@ from ai_shield.telemetry import InMemoryTelemetry
 def request() -> AgentRequest:
     return AgentRequest(
         request_id="req-telemetry",
-        identity=Identity(subject="alice", role="operator", assurance=3),
+        identity=Identity(subject="alice", role="analyst", assurance=3),
         agent_id="agent-1",
         capability="read_public",
         resource="report/1",
