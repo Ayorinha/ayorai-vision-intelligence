@@ -41,12 +41,14 @@ class DataFlowGuard:
         self.volume_limit = volume_limit
 
     def evaluate(self, event: DataFlowEvent) -> DataFlowResult:
-        if event.sensitivity == Classification.RESTRICTED:
-            if event.destination not in self.approved_destinations:
-                return DataFlowResult(
-                    FlowDecision.BLOCK,
-                    "restricted_data_external_destination",
-                )
+        if (
+            event.sensitivity == Classification.RESTRICTED
+            and event.destination not in self.approved_destinations
+        ):
+            return DataFlowResult(
+                FlowDecision.BLOCK,
+                "restricted_data_external_destination",
+            )
         if event.bytes_out < 0:
             return DataFlowResult(FlowDecision.BLOCK, "invalid_output_volume")
         if event.bytes_out > self.volume_limit:
