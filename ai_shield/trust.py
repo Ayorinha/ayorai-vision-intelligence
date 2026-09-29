@@ -68,7 +68,7 @@ class AgentTrustFabric:
         self.revoked_grants.add(grant_id)
 
     @staticmethod
-    def _parse_expiry(expires_at: str) -> datetime | None:
+    def _parse_expiry(expires_at: str | None) -> datetime | None:
         if expires_at is None:
             return None
         try:
