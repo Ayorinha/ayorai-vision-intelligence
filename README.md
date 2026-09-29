@@ -83,7 +83,7 @@ See `docs/THREAT_MODEL.md`, `docs/ARCHITECTURE.md`, `docs/MCP_RUNTIME_SECURITY.m
 |---|---|
 | Deterministic policy | Prevent model output from becoming implicit authority |
 | Agent identity/delegation | Bind actions to explicit principals and scoped authority |
-| MCP integrity registry | Pin tool metadata and fail closed on drift |
+| MCP integrity registry | Pin tool metadata, verify trusted publishers and fail closed on drift |
 | Tool poisoning detection | Detect known malicious instruction patterns before execution |
 | Data-flow guard | Restrict sensitive outbound data by destination and volume |
 | Runtime containment | Suspend sessions and revoke execution/egress |
@@ -146,7 +146,7 @@ Docker: `docker compose up --build`
 - reproducible evaluation;
 - documented security assumptions.
 
-Future quality gates include SBOM generation, supply-chain verification and OpenTelemetry-compatible observability.
+Future quality gates include SBOM generation, asymmetric supply-chain signatures/key rotation, SBOM attestation and OpenTelemetry-compatible observability.
 
 ## Design Principles
 
