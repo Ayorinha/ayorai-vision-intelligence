@@ -23,5 +23,9 @@ jobs:
         run: bandit -q -r src ai_shield
       - name: Lint
         run: ruff check src ai_shield tests
+      - name: Type check
+        run: mypy ai_shield --ignore-missing-imports
+      - name: Type check
+        run: mypy ai_shield --ignore-missing-imports
       - name: Tests
         run: PYTHONPATH=. python -m pytest -q
