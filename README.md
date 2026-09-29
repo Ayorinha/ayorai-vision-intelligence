@@ -62,6 +62,7 @@ The separation is intentional:
 - provenance and replay-aware execution;
 - crypto-agility inventory and migration interfaces;
 - runtime-attestation integration interface;
+- dependency-free runtime telemetry with an OpenTelemetry adapter seam;
 - adversarial security evaluation;
 - structured auditability.
 
@@ -75,7 +76,7 @@ Protected assets include credentials, sensitive data, external APIs, filesystem 
 
 **Security objective:** prevent an untrusted or compromised agent context from acquiring capabilities beyond the authority explicitly granted by policy.
 
-See `docs/THREAT_MODEL.md`, `docs/ARCHITECTURE.md`, `docs/MCP_RUNTIME_SECURITY.md` and `docs/EVALUATION.md`.
+See `docs/THREAT_MODEL.md`, `docs/ARCHITECTURE.md`, `docs/MCP_RUNTIME_SECURITY.md`, `docs/EVALUATION.md`, `docs/OBSERVABILITY.md` and `docs/DEPLOYMENT_REFERENCE.md`.
 
 ## Security Controls
 
@@ -146,7 +147,7 @@ Docker: `docker compose up --build`
 - reproducible evaluation;
 - documented security assumptions.
 
-Future quality gates include SBOM generation, asymmetric supply-chain signatures/key rotation, SBOM attestation and OpenTelemetry-compatible observability.
+Current quality gates include automated SBOM generation and attestation plus a dependency-free OpenTelemetry-compatible telemetry boundary. Future work includes asymmetric supply-chain signatures/key rotation and production provider integrations.
 
 ## Design Principles
 
@@ -191,7 +192,7 @@ Examples use synthetic/public data and non-destructive scenarios.
 ### v1.0 — Production Reference
 - stable public API
 - reproducible benchmark suite
-- OpenTelemetry
+- OpenTelemetry provider integration
 - signed audit evidence
 - deployment reference
 - comprehensive security evaluation
@@ -226,3 +227,9 @@ AI Engineer · Applied AI · AI Safety
 ## License
 
 MIT
+
+## Operational reference
+
+- `docs/OBSERVABILITY.md` — telemetry contract, privacy boundary and operational signals.
+- `docs/DEPLOYMENT_REFERENCE.md` — production topology and responsibilities.
+- `docs/POST_QUANTUM_MIGRATION.md` — migration planning without claiming post-quantum security.
