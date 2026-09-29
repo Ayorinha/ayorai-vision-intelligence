@@ -156,8 +156,7 @@ def test_self_delegation_is_denied():
     grant = DelegationGrant(
         "grant-self", "agent-root", "agent-root", "read_public", "ledger/", expiry()
     )
-    assert fabric.issue_delegation(grant).decision == Decision.ALLOW
-    assert fabric.authorize(signed_request("agent-root", grant)).reason == "self_delegation_invalid"
+    assert fabric.issue_delegation(grant).reason == "self_delegation_invalid"
 
 
 def test_revoked_delegation_is_denied():
@@ -168,3 +167,36 @@ def test_revoked_delegation_is_denied():
     assert fabric.issue_delegation(grant).decision == Decision.ALLOW
     fabric.revoke_grant(grant.grant_id)
     assert fabric.authorize(signed_request("agent-child", grant)).decision == Decision.BLOCK
+
+
+def test_delegation_cannot_be_used_by_another_subject():
+    fabric = fabric_with_agents()
+    grant = DelegationGrant(
+        "grant-subject", "agent-root", "agent-child", "read_public", "ledger/", expiry()
+    )
+    assert fabric.issue_delegation(grant).decision == Decision.ALLOW
+    assert fabric.authorize(signed_request("agent-root", grant)).reason == "delegation_subject_mismatch"
+
+
+def test_delegation_cannot_escalate_capability():
+    fabric = fabric_with_agents()
+    grant = DelegationGrant(
+        "grant-cap", "agent-root", "agent-child", "read_public", "ledger/", expiry()
+    )
+    assert fabric.issue_delegation(grant).decision == Decision.ALLOW
+    escalated = request(
+        "agent-child",
+        "execute_transaction",
+        metadata={"delegation_grant_id": grant.grant_id, "delegation_grant_digest": grant.digest()},
+    )
+    assert fabric.authorize(escalated).reason == "agent_capability_not_granted"
+
+
+def test_delegation_scope_rejects_path_traversal():
+    fabric = fabric_with_agents()
+    grant = DelegationGrant(
+        "grant-traversal", "agent-root", "agent-child", "read_public", "ledger/demo", expiry()
+    )
+    assert fabric.issue_delegation(grant).decision == Decision.ALLOW
+    escaped = signed_request("agent-child", grant, "ledger/demo/../secrets")
+    assert fabric.authorize(escaped).reason == "delegation_scope_exceeded"
