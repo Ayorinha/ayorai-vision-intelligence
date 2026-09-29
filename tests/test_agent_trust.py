@@ -1,8 +1,14 @@
+from datetime import UTC, datetime, timedelta
+
 from ai_shield.models import AgentRequest, Classification, Decision, Identity
 from ai_shield.trust import AgentIdentityRecord, AgentTrustFabric, DelegationGrant
 
 
-def request(agent_id: str, capability: str, resource: str = "ledger/demo") -> AgentRequest:
+def expiry(hours: float = 0.5) -> str:
+    return (datetime.now(UTC) + timedelta(hours=hours)).isoformat()
+
+
+def request(agent_id: str, capability: str, resource: str = "ledger/demo", metadata=None) -> AgentRequest:
     return AgentRequest(
         request_id=f"req-{agent_id}-{capability}",
         identity=Identity(subject="operator", role="analyst", assurance=3),
@@ -10,6 +16,27 @@ def request(agent_id: str, capability: str, resource: str = "ledger/demo") -> Ag
         capability=capability,
         resource=resource,
         classification=Classification.PUBLIC,
+        metadata=metadata or {},
+    )
+
+
+def fabric_with_agents() -> AgentTrustFabric:
+    fabric = AgentTrustFabric()
+    fabric.register(
+        AgentIdentityRecord(
+            "agent-root", "team-a", 5, frozenset({"read_public"}), max_delegation_depth=1
+        )
+    )
+    fabric.register(AgentIdentityRecord("agent-child", "team-a", 4, frozenset({"read_public"})))
+    return fabric
+
+
+def signed_request(fabric: AgentTrustFabric, grant: DelegationGrant, resource="ledger/demo"):
+    return request(
+        "agent-child",
+        "read_public",
+        resource,
+        {"delegation_grant_id": grant.grant_id, "delegation_grant_digest": grant.digest()},
     )
 
 
@@ -30,98 +57,114 @@ def test_unknown_or_revoked_agent_is_blocked():
     assert fabric.authorize(request("agent-a", "read_public")).decision == Decision.BLOCK
 
 
-def test_delegation_is_scoped_to_subject_capability_and_resource():
-    fabric = AgentTrustFabric()
-    fabric.register(
-        AgentIdentityRecord(
-            "agent-root", "team-a", 5, frozenset({"read_public"}), max_delegation_depth=1
-        )
+def test_delegation_is_short_lived_and_bound_to_subject_capability_and_resource():
+    fabric = fabric_with_agents()
+    grant = DelegationGrant(
+        "grant-1", "agent-root", "agent-child", "read_public", "ledger/", expiry()
     )
-    fabric.register(AgentIdentityRecord("agent-child", "team-a", 4, frozenset({"read_public"})))
+    assert fabric.issue_delegation(grant).decision == Decision.ALLOW
+    assert fabric.authorize(signed_request(fabric, grant)).decision == Decision.ALLOW
+    assert fabric.authorize(signed_request(fabric, grant, "customer/demo")).decision == Decision.BLOCK
 
-    grant = DelegationGrant("grant-1", "agent-root", "agent-child", "read_public", "ledger/")
+
+def test_delegation_binding_rejects_tampered_metadata():
+    fabric = fabric_with_agents()
+    grant = DelegationGrant(
+        "grant-binding", "agent-root", "agent-child", "read_public", "ledger/", expiry()
+    )
     assert fabric.issue_delegation(grant).decision == Decision.ALLOW
 
-    scoped = request("agent-child", "read_public", "ledger/demo")
-    scoped = AgentRequest(**{**scoped.__dict__, "metadata": {"delegation_grant_id": "grant-1"}})
-    assert fabric.authorize(scoped).decision == Decision.ALLOW
-
-    outside = request("agent-child", "read_public", "customer/demo")
-    outside = AgentRequest(**{**outside.__dict__, "metadata": {"delegation_grant_id": "grant-1"}})
-    assert fabric.authorize(outside).decision == Decision.BLOCK
-
+    tampered = request(
+        "agent-child",
+        "read_public",
+        metadata={"delegation_grant_id": "grant-binding", "delegation_grant_digest": "tampered"},
+    )
+    assert fabric.authorize(tampered).reason == "delegation_binding_invalid"
 
 
 def test_delegation_scope_rejects_similar_prefixes():
-    fabric = AgentTrustFabric()
-    fabric.register(
-        AgentIdentityRecord(
-            "agent-root", "team-a", 5, frozenset({"read_public"}), max_delegation_depth=1
-        )
-    )
-    fabric.register(AgentIdentityRecord("agent-child", "team-a", 4, frozenset({"read_public"})))
-
+    fabric = fabric_with_agents()
     grant = DelegationGrant(
-        "grant-boundary",
-        "agent-root",
-        "agent-child",
-        "read_public",
-        "ledger/demo",
+        "grant-boundary", "agent-root", "agent-child", "read_public", "ledger/demo", expiry()
     )
     assert fabric.issue_delegation(grant).decision == Decision.ALLOW
 
-    allowed = request("agent-child", "read_public", "ledger/demo/item/123")
-    allowed = AgentRequest(
-        **{**allowed.__dict__, "metadata": {"delegation_grant_id": "grant-boundary"}}
-    )
-    assert fabric.authorize(allowed).decision == Decision.ALLOW
+    assert fabric.authorize(signed_request(fabric, grant, "ledger/demo/item/123")).decision == Decision.ALLOW
+    assert fabric.authorize(signed_request(fabric, grant, "ledger/demo")).decision == Decision.ALLOW
+    assert fabric.authorize(signed_request(fabric, grant, "ledger/demo-secret")).decision == Decision.BLOCK
 
-    exact = request("agent-child", "read_public", "ledger/demo")
-    exact = AgentRequest(
-        **{**exact.__dict__, "metadata": {"delegation_grant_id": "grant-boundary"}}
-    )
-    assert fabric.authorize(exact).decision == Decision.ALLOW
-
-    attacker_controlled = request("agent-child", "read_public", "ledger/demo-secret")
-    attacker_controlled = AgentRequest(
-        **{
-            **attacker_controlled.__dict__,
-            "metadata": {"delegation_grant_id": "grant-boundary"},
-        }
-    )
-    assert fabric.authorize(attacker_controlled).decision == Decision.BLOCK
 
 def test_delegation_cannot_exceed_issuer_depth_or_capability():
-    fabric = AgentTrustFabric()
-    fabric.register(
-        AgentIdentityRecord(
-            "agent-root", "team-a", 5, frozenset({"read_public"}), max_delegation_depth=1
-        )
-    )
-    fabric.register(AgentIdentityRecord("agent-child", "team-a", 4, frozenset({"read_public"})))
-
+    fabric = fabric_with_agents()
     too_deep = DelegationGrant(
-        "grant-deep", "agent-root", "agent-child", "read_public", "ledger/", depth=2
+        "grant-deep", "agent-root", "agent-child", "read_public", "ledger/", expiry(), depth=2
     )
     assert fabric.issue_delegation(too_deep).decision == Decision.BLOCK
 
     invalid_capability = DelegationGrant(
-        "grant-invalid", "agent-root", "agent-child", "execute_transaction", "ledger/"
+        "grant-invalid", "agent-root", "agent-child", "execute_transaction", "ledger/", expiry()
     )
     assert fabric.issue_delegation(invalid_capability).decision == Decision.BLOCK
 
 
-def test_revoked_delegation_is_denied():
+def test_expired_delegation_is_rejected():
+    fabric = fabric_with_agents()
+    grant = DelegationGrant(
+        "grant-expired",
+        "agent-root",
+        "agent-child",
+        "read_public",
+        "ledger/",
+        (datetime.now(UTC) - timedelta(seconds=1)).isoformat(),
+    )
+    assert fabric.issue_delegation(grant).reason == "delegation_expired"
+
+
+def test_long_lived_delegation_is_rejected():
+    fabric = fabric_with_agents()
+    grant = DelegationGrant(
+        "grant-long", "agent-root", "agent-child", "read_public", "ledger/", expiry(hours=2)
+    )
+    assert fabric.issue_delegation(grant).reason == "delegation_ttl_exceeded"
+
+
+def test_missing_expiry_is_rejected():
+    fabric = fabric_with_agents()
+    grant = DelegationGrant("grant-no-expiry", "agent-root", "agent-child", "read_public", "ledger/")
+    assert fabric.issue_delegation(grant).reason == "delegation_expiry_required"
+
+
+def test_delegation_cannot_be_reused_for_another_payload():
+    fabric = fabric_with_agents()
+    original = DelegationGrant(
+        "grant-reuse", "agent-root", "agent-child", "read_public", "ledger/", expiry()
+    )
+    assert fabric.issue_delegation(original).decision == Decision.ALLOW
+    altered = DelegationGrant(
+        "grant-reuse", "agent-root", "agent-child", "read_public", "customer/", expiry()
+    )
+    assert fabric.issue_delegation(altered).reason == "delegation_grant_id_reuse"
+
+
+def test_self_delegation_is_denied():
     fabric = AgentTrustFabric()
     fabric.register(
         AgentIdentityRecord(
             "agent-root", "team-a", 5, frozenset({"read_public"}), max_delegation_depth=1
         )
     )
-    fabric.register(AgentIdentityRecord("agent-child", "team-a", 4, frozenset({"read_public"})))
-    grant = DelegationGrant("grant-1", "agent-root", "agent-child", "read_public", "ledger/")
+    grant = DelegationGrant(
+        "grant-self", "agent-root", "agent-root", "read_public", "ledger/", expiry()
+    )
     assert fabric.issue_delegation(grant).decision == Decision.ALLOW
-    fabric.revoke_grant("grant-1")
-    scoped = request("agent-child", "read_public", "ledger/demo")
-    scoped = AgentRequest(**{**scoped.__dict__, "metadata": {"delegation_grant_id": "grant-1"}})
-    assert fabric.authorize(scoped).decision == Decision.BLOCK
+    assert fabric.authorize(signed_request(fabric, grant)).reason == "self_delegation_invalid"
+
+
+def test_revoked_delegation_is_denied():
+    fabric = fabric_with_agents()
+    grant = DelegationGrant(
+        "grant-revoked", "agent-root", "agent-child", "read_public", "ledger/", expiry()
+    )
+    assert fabric.issue_delegation(grant).decision == Decision.ALLOW
+    fabric.revoke_grant(grant.grant_id)
+    assert fabric.authorize(signed_request(fabric, grant)).decision == Decision.BLOCK
