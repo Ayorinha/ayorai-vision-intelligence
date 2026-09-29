@@ -31,9 +31,9 @@ def fabric_with_agents() -> AgentTrustFabric:
     return fabric
 
 
-def signed_request(fabric: AgentTrustFabric, grant: DelegationGrant, resource="ledger/demo"):
+def signed_request(agent_id: str, grant: DelegationGrant, resource="ledger/demo"):
     return request(
-        "agent-child",
+        agent_id,
         "read_public",
         resource,
         {"delegation_grant_id": grant.grant_id, "delegation_grant_digest": grant.digest()},
@@ -63,8 +63,8 @@ def test_delegation_is_short_lived_and_bound_to_subject_capability_and_resource(
         "grant-1", "agent-root", "agent-child", "read_public", "ledger/", expiry()
     )
     assert fabric.issue_delegation(grant).decision == Decision.ALLOW
-    assert fabric.authorize(signed_request(fabric, grant)).decision == Decision.ALLOW
-    assert fabric.authorize(signed_request(fabric, grant, "customer/demo")).decision == Decision.BLOCK
+    assert fabric.authorize(signed_request("agent-child", grant)).decision == Decision.ALLOW
+    assert fabric.authorize(signed_request("agent-child", grant, "customer/demo")).decision == Decision.BLOCK
 
 
 def test_delegation_binding_rejects_tampered_metadata():
@@ -89,9 +89,9 @@ def test_delegation_scope_rejects_similar_prefixes():
     )
     assert fabric.issue_delegation(grant).decision == Decision.ALLOW
 
-    assert fabric.authorize(signed_request(fabric, grant, "ledger/demo/item/123")).decision == Decision.ALLOW
-    assert fabric.authorize(signed_request(fabric, grant, "ledger/demo")).decision == Decision.ALLOW
-    assert fabric.authorize(signed_request(fabric, grant, "ledger/demo-secret")).decision == Decision.BLOCK
+    assert fabric.authorize(signed_request("agent-child", grant, "ledger/demo/item/123")).decision == Decision.ALLOW
+    assert fabric.authorize(signed_request("agent-child", grant, "ledger/demo")).decision == Decision.ALLOW
+    assert fabric.authorize(signed_request("agent-child", grant, "ledger/demo-secret")).decision == Decision.BLOCK
 
 
 def test_delegation_cannot_exceed_issuer_depth_or_capability():
@@ -157,7 +157,7 @@ def test_self_delegation_is_denied():
         "grant-self", "agent-root", "agent-root", "read_public", "ledger/", expiry()
     )
     assert fabric.issue_delegation(grant).decision == Decision.ALLOW
-    assert fabric.authorize(signed_request(fabric, grant)).reason == "self_delegation_invalid"
+    assert fabric.authorize(signed_request("agent-root", grant)).reason == "self_delegation_invalid"
 
 
 def test_revoked_delegation_is_denied():
@@ -167,4 +167,4 @@ def test_revoked_delegation_is_denied():
     )
     assert fabric.issue_delegation(grant).decision == Decision.ALLOW
     fabric.revoke_grant(grant.grant_id)
-    assert fabric.authorize(signed_request(fabric, grant)).decision == Decision.BLOCK
+    assert fabric.authorize(signed_request("agent-child", grant)).decision == Decision.BLOCK
