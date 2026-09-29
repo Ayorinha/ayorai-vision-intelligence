@@ -39,6 +39,10 @@ class ShieldEngine:
             "destination": request.destination,
             "external_network": request.external_network,
             "idempotency_key": request.idempotency_key,
+            "delegation": {
+                "grant_id": request.metadata.get("delegation_grant_id"),
+                "grant_digest": request.metadata.get("delegation_grant_digest"),
+            },
         }
         return hashlib.sha256(
             json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
@@ -57,7 +61,11 @@ class ShieldEngine:
                 Decision.ISOLATE, "capability_revoked_by_isolation", ("sovereign_isolator",)
             )
         else:
-            result = self.trust_fabric.authorize(request) if self.trust_fabric is not None else authorize(request)
+            result = (
+                self.trust_fabric.authorize(request)
+                if self.trust_fabric is not None
+                else authorize(request)
+            )
             if result.decision == Decision.ALLOW:
                 result = authorize(request)
             if result.decision == Decision.ALLOW and transaction is not None:
