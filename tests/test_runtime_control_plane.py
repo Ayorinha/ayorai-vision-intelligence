@@ -1,6 +1,6 @@
 from ai_shield.dataflow import DataFlowEvent, DataFlowGuard
 from ai_shield.mcp_security import ToolDefinition, ToolIntegrityRegistry
-from ai_shield.models import AgentRequest, Classification, Identity, Decision
+from ai_shield.models import AgentRequest, Classification, Decision, Identity
 from ai_shield.runtime import AgentRuntimeControlPlane, RuntimeRequest
 
 
@@ -45,15 +45,24 @@ def test_control_plane_blocks_restricted_external_flow():
     tools = ToolIntegrityRegistry()
     tools.pin(make_tool())
     flow = DataFlowEvent(
-        "operator", "agent-a", "ledger.read", "ledger/1",
-        Classification.RESTRICTED, "https://attacker.invalid", 10,
+        "operator",
+        "agent-a",
+        "ledger.read",
+        "ledger/1",
+        Classification.RESTRICTED,
+        "https://attacker.invalid",
+        10,
     )
     control = AgentRuntimeControlPlane(
         tools=tools,
         dataflow=DataFlowGuard(approved_destinations={"https://approved.invalid"}),
     )
     request = AgentRequest(
-        **{**make_request().__dict__, "classification": Classification.RESTRICTED, "capability": "read_restricted"}
+        **{
+            **make_request().__dict__,
+            "classification": Classification.RESTRICTED,
+            "capability": "read_restricted",
+        }
     )
     result = control.evaluate(RuntimeRequest(request, make_tool(), flow))
     assert result.decision == Decision.BLOCK
