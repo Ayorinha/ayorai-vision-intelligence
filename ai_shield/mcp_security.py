@@ -6,10 +6,22 @@ import re
 
 
 _POISON_PATTERNS = (
-    re.compile(r"ignore\s+(?:previous|prior|system)\s+instructions", re.I),
-    re.compile(r"send\s+(?:all|the|last)\s+.*(?:records|invoices|data)", re.I),
-    re.compile(r"include\s+.*(?:credentials|secrets|tokens)", re.I),
-    re.compile(r"do\s+not\s+(?:tell|inform|show)\s+the\s+user", re.I),
+    re.compile(
+        r"ignore\s+(?:previous|prior|system)\s+instructions",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"send\s+(?:all|the|last)\s+.*(?:records|invoices|data)",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"include\s+.*(?:credentials|secrets|tokens)",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"do\s+not\s+(?:tell|inform|show)\s+the\s+user",
+        re.IGNORECASE,
+    ),
 )
 
 
@@ -23,16 +35,7 @@ class ToolDefinition:
     version: str = "unknown"
 
     def canonical(self) -> str:
-        return "\n".join(
-            (
-                self.name,
-                self.description,
-                self.input_schema,
-                self.publisher,
-                self.endpoint,
-                self.version,
-            )
-        )
+        return f"{self.name}\n{self.description}\n{self.input_schema}\n{self.publisher}\n{self.endpoint}\n{self.version}"
 
     def digest(self) -> str:
         return hashlib.sha256(self.canonical().encode("utf-8")).hexdigest()
