@@ -4,6 +4,8 @@ from dataclasses import dataclass
 import hashlib
 import re
 
+from .publisher_auth import PublisherKey, ManifestSigner
+
 
 _POISON_PATTERNS = (
     re.compile(
@@ -33,6 +35,8 @@ class ToolDefinition:
     publisher: str
     endpoint: str
     version: str = "unknown"
+    publisher_key_id: str | None = None
+    signature: str | None = None
 
     def canonical(self) -> str:
         return f"{self.name}\n{self.description}\n{self.input_schema}\n{self.publisher}\n{self.endpoint}\n{self.version}"
@@ -53,8 +57,14 @@ class ToolAssessment:
 class ToolIntegrityRegistry:
     """TOFU-pinned MCP metadata with deterministic drift and poisoning checks."""
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        trusted_publishers: dict[str, PublisherKey] | None = None,
+        require_publisher_auth: bool = False,
+    ) -> None:
         self._pinned: dict[str, str] = {}
+        self._trusted_publishers = dict(trusted_publishers or {})
+        self._require_publisher_auth = require_publisher_auth
         self._definitions: dict[str, ToolDefinition] = {}
         self._revoked: set[str] = set()
 
@@ -79,6 +89,12 @@ class ToolIntegrityRegistry:
     def assess(self, definition: ToolDefinition) -> ToolAssessment:
         digest = definition.digest()
         signals = self._signals(definition)
+        if self._require_publisher_auth:
+            key = self._trusted_publishers.get(definition.publisher_key_id or "")
+            if key is None or definition.signature is None:
+                return ToolAssessment(False, "publisher_auth_required", digest, poisoning_signals=signals)
+            if not ManifestSigner(key).verify(definition.canonical(), definition.signature):
+                return ToolAssessment(False, "publisher_signature_invalid", digest, poisoning_signals=signals)
         if definition.name in self._revoked:
             return ToolAssessment(
                 False,
