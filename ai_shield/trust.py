@@ -88,6 +88,8 @@ class AgentTrustFabric:
             return PolicyResult(Decision.BLOCK, "inactive_delegation_issuer", ("agent_identity",))
         if not subject.active or subject.agent_id in self.revoked_agents:
             return PolicyResult(Decision.BLOCK, "inactive_delegation_subject", ("agent_identity",))
+        if grant.issuer_agent_id == grant.subject_agent_id:
+            return PolicyResult(Decision.BLOCK, "self_delegation_invalid", ("delegation",))
         if grant.capability not in issuer.capabilities:
             return PolicyResult(Decision.BLOCK, "issuer_lacks_capability", ("delegation",))
         if grant.depth < 1 or grant.depth > issuer.max_delegation_depth:
@@ -115,6 +117,10 @@ class AgentTrustFabric:
         """Return True only for the exact resource or a child resource."""
         resource = resource.rstrip("/")
         prefix = prefix.rstrip("/")
+        if any(part == ".." for part in resource.split("/")):
+            return False
+        if any(part == ".." for part in prefix.split("/")):
+            return False
         return resource == prefix or resource.startswith(prefix + "/")
 
     def authorize(self, request: AgentRequest) -> PolicyResult:
