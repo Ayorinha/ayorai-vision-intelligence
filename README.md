@@ -95,7 +95,7 @@ Protected assets include credentials, sensitive data, external APIs, filesystem 
 
 **Security objective:** prevent an untrusted or compromised agent context from acquiring capabilities beyond the authority explicitly granted by policy.
 
-See `docs/THREAT_MODEL.md`, `docs/ARCHITECTURE.md`, `docs/MCP_RUNTIME_SECURITY.md`, `docs/EVALUATION.md`, `docs/OBSERVABILITY.md` and `docs/DEPLOYMENT_REFERENCE.md`.
+See `docs/THREAT_MODEL.md`, `docs/architecture.md`, `docs/MCP_RUNTIME_SECURITY.md`, `docs/EVALUATION.md`, `docs/OBSERVABILITY.md` and `docs/DEPLOYMENT_REFERENCE.md`.
 
 ## Security Controls
 
