@@ -29,7 +29,7 @@ dev = [
   "pip-audit>=2.7,<3",
   "bandit>=1.7,<2",
   "setuptools>=83.0.0,<84",
-  "mypy>=1.11,<2"
+  "mypy>=1.11,<3"
 ]
 
 [tool.setuptools.packages.find]
