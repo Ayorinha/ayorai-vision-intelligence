@@ -28,7 +28,7 @@ dev = [
   "httpx>=0.27,<1",
   "pip-audit>=2.7,<3",
   "bandit>=1.7,<2",
-  "setuptools>=83.0.0,<84",
+  "setuptools>=83.0.0,<85",
   "mypy>=1.11,<2"
 ]
 
